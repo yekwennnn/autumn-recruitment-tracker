@@ -1,0 +1,20 @@
+{
+  "onboarded": false,
+  "target_grad_year": "",
+  "target_season_label": "",
+  "season_end_date": "",
+  "state_retention_days": 120,
+  "include_internships": false,
+  "job_category_label": "",
+  "job_filter": {
+    "positive_keywords": [],
+    "fuzzy_keywords": [],
+    "negative_keywords": [],
+    "intern_exclusion_keywords": [
+      "实习生", "实习", "暑期实习", "日常实习", "寒假实习", "提前批实习", "Intern"
+    ],
+    "formal_recruit_keywords": [
+      "校园招聘", "校招", "管培生", "应届生", "全职", "正式员工"
+    ]
+  }
+}
