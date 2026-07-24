@@ -1,0 +1,13 @@
+# 用户本地私有数据，绝不入库
+config.json
+state/*.json
+resumes/*
+!resumes/.gitkeep
+
+# vendored kami 的商业字体只允许运行时下载，不允许提交
+vendor/kami/assets/fonts/*.ttf
+vendor/kami/assets/fonts/*.woff2
+
+__pycache__/
+*.pyc
+.DS_Store

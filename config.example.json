@@ -16,5 +16,17 @@
     "formal_recruit_keywords": [
       "校园招聘", "校招", "管培生", "应届生", "全职", "正式员工"
     ]
+  },
+  "resume": {
+    "enabled": true,
+    "max_deep_evals_per_run": 15,
+    "jd_fetch_parallel_agents": 3,
+    "jd_fetch_max_attempts": 2,
+    "min_score_for_action": 70,
+    "auto_deep_eval_when_unattended": true
+  },
+  "discovery": {
+    "company_watchlist": [],
+    "watchlist_batch_size": 12
   }
 }

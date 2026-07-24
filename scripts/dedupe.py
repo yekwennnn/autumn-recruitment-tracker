@@ -84,7 +84,7 @@ def maybe_archive_season(state, config, state_path):
     season_label = state.get("season", "season")
     archive_path = state_path.replace(".json", f".{season_label}.json")
     save_json(archive_path, state)
-    return {"schema_version": 1, "season": season_label, "last_run": None, "postings": {}}
+    return {"schema_version": 2, "season": season_label, "last_run": None, "postings": {}}
 
 
 def prune_stale(state, retention_days):
@@ -113,9 +113,13 @@ def main():
 
     candidates = load_json(args.input, [])
     config = load_json(args.config, {})
-    state = load_json(args.state, {"schema_version": 1, "season": config.get("target_season_label", "season"), "last_run": None, "postings": {}})
+    state = load_json(args.state, {"schema_version": 2, "season": config.get("target_season_label", "season"), "last_run": None, "postings": {}})
 
     state = maybe_archive_season(state, config, args.state)
+
+    for h, rec in state.get("postings", {}).items():
+        rec.setdefault("id", h)
+    state["schema_version"] = 2
 
     postings = state.setdefault("postings", {})
     fuzzy_index = {fuzzy_key(rec["company"], rec["title"]): h for h, rec in postings.items()}
@@ -143,6 +147,7 @@ def main():
             continue
 
         rec = {
+            "id": h,
             "company": company,
             "title": title,
             "city": c.get("city", "未注明"),
