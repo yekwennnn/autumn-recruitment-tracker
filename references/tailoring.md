@@ -116,6 +116,20 @@ python3 $SKILL_DIR/vendor/kami/scripts/build.py --check-placeholders "$(cd $SKIL
 python3 -c "from weasyprint import HTML; HTML('<版本目录>/source.html', base_url='<版本目录>').write_pdf('<版本目录>/resume.pdf')"
 ```
 
+3.5. **放了照片就必须把页面渲染出来看一眼**，不能只查图片对象存不存在：
+
+```
+python3 -c "
+import fitz
+d = fitz.open('<版本目录>/resume.pdf')
+d[0].get_pixmap(dpi=150, clip=fitz.Rect(0, 0, d[0].rect.width, 130)).save('/tmp/_top.png')
+print('已渲染顶部，去看这张图')"
+```
+
+然后**真的去读那张 png**。`get_images()` 返回 1 张只能说明 PDF 里有这个图片对象，**不等于它显示出来了**——尺寸算错、被别的元素盖住、data URI 损坏，任何一种都会让对象在、画面空。踩过一次：验证脚本打印"证件照 17.1x24.5mm ✓"，用户打开却说"没有照片"。
+
+这和"文件存在不等于能跑"是同一类错误：**验证要验到用户实际看到的那一层**。缺 pymupdf 就跳过这步，并在交付时明确告诉用户"照片没法自动核验，你自己确认一下"。
+
 4. **查 markdown 残留**（同样是 V1.10.0 起提供，同样必须传绝对路径）：
 
 ```
@@ -191,5 +205,13 @@ python3 $SKILL_DIR/scripts/insights.py log-version --insights $SKILL_DIR/state/m
 - 改动清单（`changes[]`）及每条的依据——尤其 demo 级项目和 AI 相关素材的措辞出处；
 - 改前/改后匹配分（score_before → score_after）；
 - 存档位置（`resumes/versions/<版本id>/`）与产物形态（PDF 或 HTML）。
+
+**交付到用户能打开的位置时，文件名必须带版本或时间戳，不要覆盖同名文件。**
+
+```
+<公司或岗位>-<YYYYMMDD-HHMM>.pdf
+```
+
+覆盖同名文件会让用户打开到**缓存的旧版本**——macOS 的预览、Quick Look、各种 PDF 阅读器都缓存。踩过一次：简历里明明加了证件照，用户打开却说"没有照片"，因为系统给的是覆盖前那一版。改了同名文件还想让用户看新的，就得让他先关掉再开，不如一开始就换个名字。同时把上一版同名文件删掉，避免他在文件夹里点错。
 
 最后问一句"投了跟我说一声"。用户说投了 → 按 `references/applications.md` 记一笔，`--resume-version` 填这次产出的版本 id、`--posting-id` 填岗位 id。这一步是"哪一版简历更能过筛"这个统计唯一的数据来源，别省。
