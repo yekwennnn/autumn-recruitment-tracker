@@ -36,7 +36,27 @@ python3 $SKILL_DIR/scripts/insights.py add-fact --insights $SKILL_DIR/state/matc
 
 ## W4 改写
 
-执行 resume-jd-fit 的 **Step 4**（复用现有简历结构原地改内容）。基底没有 HTML（例如初始导入的是 PDF）→ 按 `vendor/kami/assets/templates/resume.html` 起版（英文简历用 `resume-en.html`），动笔前先读 `vendor/kami/CHEATSHEET.md` + `vendor/kami/references/resume-writing.md`。
+执行 resume-jd-fit 的 **Step 4**（复用现有简历结构原地改内容）。基底没有 HTML（例如初始导入的是 PDF）→ 起版模板按下表选，动笔前先读 `vendor/kami/CHEATSHEET.md` + `vendor/kami/references/resume-writing.md`。
+
+| 场景 | 用哪个模板 |
+|---|---|
+| **中文校招简历（默认）** | `$SKILL_DIR/assets/templates/resume-campus-cn.html` |
+| 英文简历 | `$SKILL_DIR/vendor/kami/assets/templates/resume-en.html` |
+| 社招 / 有多年工作经历 | `$SKILL_DIR/vendor/kami/assets/templates/resume.html` |
+
+> **默认必须用校招版，不要直接拿 kami 的 `resume.html`。**
+>
+> kami 原版是**社招**布局：教育背景排在最后一节，有"工作经历"而没有"实习经历"，还有"开源项目 & 独立开发者""AI 判断与行动""对外影响力"这些资深工程师专属章节。给应届生用会有两个后果：学历这个**校招第一筛选项**被埋到最底下；以及三个填不满的章节逼着人注水。
+>
+> 校招版的章节顺序是 **个人评价 → 教育背景 → 实习经历 → 项目经历 → 技能证书 → 荣誉奖项（可选）**，一页制。
+>
+> 它的**版式逐字节继承自 kami**（`<head>` 与整个 `<style>` 原样复制），只换了正文结构，所以视觉上和 kami 出品完全一致。改章节结构改 `assets/campus-body.html` 后重新生成：
+>
+> ```
+> python3 $SKILL_DIR/scripts/make_campus_template.py
+> ```
+>
+> **不要直接编辑 `assets/templates/resume-campus-cn.html`**，它是生成物，下次重新生成会被覆盖。
 
 > `vendor/kami/SKILL.md` 是上游 V1.10.0 原文，本仓库只内嵌了简历所需子集（详见 `vendor/README.md`）。走到下面这些分支时**声明跳过**，不要去找文件：
 > - **Step 0 品牌档案**（读 `~/.config/kami/brand.md`）——本流程不用品牌档案。
@@ -55,10 +75,12 @@ python3 $SKILL_DIR/scripts/insights.py add-fact --insights $SKILL_DIR/state/matc
 2. **渲染前先查占位符**（kami V1.10.0 起提供，**这一步不可跳**）：
 
 ```
-python3 $SKILL_DIR/vendor/kami/scripts/build.py --check-placeholders <版本目录>/source.html
+python3 $SKILL_DIR/vendor/kami/scripts/build.py --check-placeholders "$(cd $SKILL_DIR && pwd)/resumes/versions/<版本id>/source.html"
 ```
 
 漏填的 `{{姓名}}`、`{{EMAIL}}` 之类会被逐个列出来。**报错就回去填，不许带着占位符往下走**——投出去一份写着 `{{姓名}}` 的简历是这个流程能造成的最严重事故。
+
+> **必须传绝对路径。** `build.py` 对相对路径是按 **kami 自己的目录**解析的（`vendor/kami/scripts/checks.py` 里 `path = ROOT / path`），传相对路径会得到一句 `file not found`——那是路径找错了，不是文件真的没有，别据此以为检查通过了。
 
 3. 渲染 PDF：
 
@@ -66,10 +88,10 @@ python3 $SKILL_DIR/vendor/kami/scripts/build.py --check-placeholders <版本目�
 python3 -c "from weasyprint import HTML; HTML('<版本目录>/source.html', base_url='<版本目录>').write_pdf('<版本目录>/resume.pdf')"
 ```
 
-4. **查 markdown 残留**（同样是 V1.10.0 起提供）：
+4. **查 markdown 残留**（同样是 V1.10.0 起提供，同样必须传绝对路径）：
 
 ```
-python3 $SKILL_DIR/vendor/kami/scripts/build.py --check-markdown <版本目录>/resume.pdf
+python3 $SKILL_DIR/vendor/kami/scripts/build.py --check-markdown "$(cd $SKILL_DIR && pwd)/resumes/versions/<版本id>/resume.pdf"
 ```
 
 抓 `**加粗**`、反引号、`---` 这类漏进成稿的标记——AI 改写内容时很容易留下。

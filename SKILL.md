@@ -28,7 +28,8 @@ TMP=$SKILL_DIR/state/tmp
 - 配置：`$SKILL_DIR/config.json`（届别/季节/方向/关键词/深评参数/公司池/发现层策略，首次使用可能不存在，见第 0 步）、`$SKILL_DIR/config.example.json`（模板，不要直接改它）
 - 状态：`$SKILL_DIR/state/seen_postings.json`（岗位、深评状态、截止日期，顶层含发现层账本）、`$SKILL_DIR/state/match_insights.json`（累积洞察）、`$SKILL_DIR/state/applications.json`（投递记录）
 - 简历档案：`$SKILL_DIR/resumes/`（`index.json` 版本索引、`profile.json` 求职画像与简历分析、`originals/` 原件、`versions/<id>/` 各版本）
-- 脚本：`$SKILL_DIR/scripts/` 下 `discovery.py`（发现层排程与账本）、`dedupe.py`（去重）、`digest.py`（日报渲染）、`extract_text.py`（PDF/DOCX 文本抽取降级链）、`resume_store.py`（简历档案管理）、`match_state.py`（深评状态机）、`insights.py`（洞察累积）、`apply.py`（投递追踪）
+- 脚本：`$SKILL_DIR/scripts/` 下 `discovery.py`（发现层排程与账本）、`dedupe.py`（去重）、`digest.py`（日报渲染）、`extract_text.py`（PDF/DOCX 文本抽取降级链）、`resume_store.py`（简历档案管理）、`match_state.py`（深评状态机）、`insights.py`（洞察累积）、`apply.py`（投递追踪）、`make_campus_template.py`（生成校招简历模板）
+- 简历模板：`$SKILL_DIR/assets/templates/resume-campus-cn.html`（**中文校招默认模板**，一页制，教育背景在实习经历之前；由 `make_campus_template.py` 从 `assets/campus-body.html` + kami 版式生成，**不要直接编辑**）
 - 参考文档：`$SKILL_DIR/references/` 下 `sources.md`（车道定义与轮转策略）、`keyword-filters.md`（过滤逻辑）、`resume-profile.md`（简历导入、分析与画像）、`matching.md`（JD 抓取契约与评分量表）、`tailoring.md`（一键改简历 W1-W7）、`applications.md`（投递追踪）、`digest-format.md`（日报格式）
 - 内嵌技能：`$SKILL_DIR/vendor/kami/`（简历排版工具箱）、`$SKILL_DIR/vendor/resume-jd-fit/SKILL.md`（JD 定制改简历指引）——一律用读文件方式获取内容，不依赖任何技能加载工具
 

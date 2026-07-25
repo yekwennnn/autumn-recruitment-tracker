@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>{{姓名}} · 简历</title>
+<meta name="author" content="{{姓名}}">
+<meta name="description" content="{{摘要}}">
+<meta name="keywords" content="{{关键词}}">
+<meta name="generator" content="Kami">
+<style>
+  /* W04 / regular face for body text */
+  @font-face {
+    font-family: "TsangerJinKai02";
+    src: url("../fonts/TsangerJinKai02-W04.ttf") format("truetype"),
+       url("https://cdn.jsdelivr.net/gh/tw93/Kami@main/assets/fonts/TsangerJinKai02-W04.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  /* W05 / medium face for headings (no synthetic bold) */
+  @font-face {
+    font-family: "TsangerJinKai02";
+    src: url("../fonts/TsangerJinKai02-W05.ttf") format("truetype"),
+       url("https://cdn.jsdelivr.net/gh/tw93/Kami@main/assets/fonts/TsangerJinKai02-W05.ttf") format("truetype");
+    font-weight: 500;
+    font-style: normal;
+  }
+
+@page {
+    size: A4;
+    margin: 11mm 13mm 11mm 13mm;
+    background: #f5f4ed;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --parchment: #f5f4ed;
+    --ivory:     #faf9f5;
+    --border:    #e8e6dc;
+    --border-soft: #e5e3d8;
+    --near-black: #141413;
+    --dark-warm: #3d3d3a;
+    --olive:     #504e49;
+    --stone:     #6b6a64;
+    --brand:     #1B365D;
+    --brand-tint: #EEF2F7;          /* solid equivalent of rgba(1B365D, 0.08), avoids tag double-rectangle bug */
+    --serif: "TsangerJinKai02", "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", "STSong", Georgia, serif;
+    --sans: var(--serif);
+  }
+
+  html, body { background: var(--parchment); }
+
+  @media screen {
+    body { max-width: 210mm; margin: 0 auto; padding: 11mm 13mm; }
+  }
+
+  body {
+    color: var(--near-black);
+    font-family: var(--serif);
+    font-size: 9.2pt;
+    line-height: 1.42;
+    letter-spacing: 0.3pt;
+    widows: 3;
+    orphans: 3;
+  }
+
+  .serif {
+    font-family: var(--serif);
+  }
+
+  a { color: var(--brand); text-decoration: none; }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 4.2mm;
+    padding-bottom: 2.3mm;
+    border-bottom: 0.6pt solid var(--border);
+  }
+  .header > div:first-child { flex-shrink: 0; }
+  .name {
+    font-family: var(--serif);
+    font-size: 26.5pt;
+    font-weight: 500;
+    letter-spacing: 0.5pt;
+    color: var(--near-black);
+    line-height: 1;
+    margin-bottom: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 2.2mm;
+    white-space: nowrap;
+  }
+  .alias {
+    font-size: 12.5pt;
+    font-weight: 400;
+    color: var(--stone);
+    letter-spacing: 0.2pt;
+  }
+  .alias::before {
+    content: "";
+  }
+  .tagline { font-size: 9.5pt; color: var(--olive); line-height: 1.3; }
+  .tagline .accent { color: var(--brand); font-weight: 500; }
+
+  .contact {
+    text-align: right;
+    font-size: 9pt;
+    color: var(--stone);
+    line-height: 1.5;
+    margin-bottom: -0.5mm;
+  }
+  .contact a { color: var(--dark-warm); }
+  .contact .loc { color: var(--olive); font-weight: 500; }
+  .contact .role { color: var(--brand); font-size: 10.5pt; font-weight: 500; }
+  .contact .sep { color: var(--border); margin: 0 0.4em; }
+
+  /* METRICS */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 6mm;
+    margin-bottom: 3mm;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .metric {
+    background: transparent;
+    padding: 1mm 0 1.2mm;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7mm;
+    min-width: 0;
+    break-inside: avoid;
+  }
+  .metric-value {
+    font-family: var(--serif);
+    font-size: 13pt;
+    font-weight: 500;
+    color: var(--brand);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .metric-label {
+    font-size: 9pt;
+    color: var(--olive);
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .metric-value .unit {
+    font-size: 10.5pt;
+    margin-left: 0.3mm;
+    font-weight: 500;
+    color: var(--brand);
+  }
+
+  .metrics--stack .metric {
+    gap: 0.5mm;
+    padding-bottom: 2mm;
+    border-bottom: 0.3pt dotted var(--border);
+  }
+
+  /* SECTION */
+  .section-title {
+    font-family: var(--serif);
+    font-size: 12.5pt;
+    font-weight: 500;
+    color: var(--near-black);
+    border-bottom: 0.5pt solid var(--border);
+    padding: 0 0 1mm 0;
+    margin: 5.8mm 0 1.7mm 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2mm;
+  }
+  .section-title .sub {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 9pt;
+    color: var(--stone);
+    letter-spacing: 0.3pt;
+  }
+
+  section:first-of-type .section-title { margin-top: 0; }
+  .page-break > .section-title { margin-top: 0; }
+
+  /* Unify gap from section-title bottom border to first content's first line = 3mm
+     (section-title margin-bottom 1.8mm + first-child top spacing 1.2mm) */
+  .section-title + .skill-row { padding-top: 1.2mm; }
+  .section-title + .edu-row { padding-top: 1.2mm; }
+
+  /* SUMMARY */
+  .summary { font-size: 9.2pt; line-height: 1.42; color: var(--near-black); }
+  .summary .em-brand { color: var(--brand); }
+  .summary .hl { color: var(--brand); }
+
+  /* TIMELINE */
+  .timeline { display: flex; gap: 6mm; margin-bottom: 2mm; margin-left: 0; margin-right: 0; }
+  .tl-step {
+    flex: 1; background: transparent;
+    padding: 0.8mm 0;
+    break-inside: avoid;
+  }
+  .tl-top {
+    display: flex; align-items: baseline; gap: 1.5mm;
+    margin-bottom: 0.5mm;
+  }
+  .tl-year {
+    font-family: var(--serif);
+    font-size: 11pt; font-weight: 500;
+    color: var(--brand); line-height: 1;
+  }
+  .tl-head {
+    font-size: 11pt; font-weight: 500;
+    color: var(--near-black);
+  }
+  .tl-body { font-size: 9pt; color: var(--olive); line-height: 1.40; letter-spacing: 0.3pt; }
+
+  /* PROJECTS */
+  .project {
+    padding: 2.6mm 0;
+    break-inside: avoid;
+  }
+  .project:first-of-type { padding-top: 1.2mm; }
+  .proj-head {
+    display: block; margin-bottom: 0.75mm;
+  }
+  .proj-name {
+    font-family: var(--serif);
+    font-size: 11pt; font-weight: 500; color: var(--near-black);
+  }
+  .proj-kind { font-size: 11pt; color: var(--olive); margin-left: 1.5mm; }
+  .proj-role {
+    font-size: 9pt; color: var(--brand); font-weight: 500;
+    float: right; background: #EEF2F7;
+    padding: 0.4mm 1.2mm; border-radius: 2pt; letter-spacing: 0.05pt;
+    white-space: nowrap;
+  }
+  .proj-lines { display: table; width: 100%; }
+  .proj-row { display: table-row; }
+  .proj-label {
+    display: table-cell; width: 11mm;
+    font-size: 9pt; color: var(--brand);
+    font-weight: 500; letter-spacing: 0.2pt;
+    padding: 0.2mm 0 0.4mm 0; vertical-align: top;
+  }
+  .proj-text {
+    display: table-cell; font-size: 9pt;
+    color: var(--near-black); line-height: 1.40; letter-spacing: 0.3pt;
+    padding: 0 0 0.4mm 0.5mm;
+  }
+  .proj-text .hl { color: var(--brand); }
+
+  .team-culture {
+    margin-top: 2mm; padding: 1.5mm 2.5mm;
+    background: var(--brand-tint);
+    border-radius: 2pt;
+    font-size: 9pt; color: var(--olive); line-height: 1.40;
+    break-inside: avoid;
+  }
+  .team-culture .hl { color: var(--brand); }
+
+  /* PAGE 2 FORCE BREAK */
+  .page-break { break-before: page; }
+
+  /* OPEN SOURCE - NEW ENHANCED LAYOUT */
+  .os-intro {
+    font-size: 9.2pt; line-height: 1.40; letter-spacing: 0.3pt;
+    color: var(--near-black);
+    padding: 0; margin: 1.2mm 0 2mm 0;
+    background: transparent;
+    break-inside: avoid;
+  }
+  .os-intro .hl { color: var(--brand); }
+  .os-intro .strong { color: var(--near-black); }
+
+  .os-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 8mm; row-gap: 1mm;
+  }
+  .os-item {
+    display: flex; align-items: baseline;
+    gap: 2mm; padding: 1mm 0 1mm 0;
+    border-bottom: 0.3pt dotted var(--border);
+    break-inside: avoid;
+  }
+  .os-item:last-child,
+  .os-item:nth-last-child(2):nth-child(odd) { border-bottom: none; }
+  .os-name {
+    font-family: var(--serif);
+    font-size: 10pt; font-weight: 500;
+    flex-shrink: 0; min-width: 14mm;
+  }
+  .os-name a { color: var(--brand); }
+  .os-desc { font-size: 9pt; color: var(--olive); line-height: 1.40; flex: 1; }
+  .os-star {
+    font-size: 9pt; color: var(--dark-warm);
+    font-weight: 500; white-space: nowrap; flex-shrink: 0; min-width: 7.5mm; text-align: right;
+  }
+  .os-star.big { color: var(--brand); font-size: 9.2pt; }
+
+  .os-highlight {
+    margin-top: 2.5mm;
+    padding: 1.8mm 2.8mm;
+    background: var(--brand-tint);
+    border-radius: 2pt;
+    font-size: 9pt; line-height: 1.40;
+    color: var(--near-black);
+    letter-spacing: 0.3pt;
+    break-inside: avoid;
+  }
+  .os-highlight .hl { color: var(--brand); }
+  .os-highlight .tag {
+    display: inline-block;
+    background: var(--brand); color: var(--ivory);
+    font-size: 9pt; font-weight: 500;
+    padding: 0.2mm 1.5mm; border-radius: 2pt;
+    margin-right: 1.2mm; letter-spacing: 0.2pt;
+    transform: translateY(-0.2mm);
+  }
+
+  /* AI CONVICTION - NEW SECTION */
+  .convictions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2.5mm;
+    margin-top: 1.2mm;
+  }
+  .conv-card {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0 2mm 0 0;
+    break-inside: avoid;
+  }
+  .conv-head, .ai-card-head {
+    font-family: var(--serif);
+    font-size: 9.8pt; font-weight: 500;
+    color: var(--near-black); margin-bottom: 0.9mm;
+    display: flex; align-items: baseline; gap: 1.5mm;
+  }
+  .conv-head .year, .ai-card-head .year {
+    color: var(--brand); font-weight: 500;
+    font-size: 9pt;
+  }
+  .conv-body, .ai-card-body {
+    font-size: 9pt; color: var(--olive);
+    line-height: 1.40; letter-spacing: 0.3pt;
+  }
+  .conv-body .hl, .ai-card-body .hl { color: var(--brand); }
+  .conv-body .em-brand, .ai-card-body .em-brand { color: var(--brand); }
+
+  /* INFLUENCE */
+  .handle-strip {
+    background: transparent;
+    padding: 0; margin: 1.2mm 0 2mm 0;
+    display: flex; align-items: baseline; gap: 3mm;
+    break-inside: avoid;
+  }
+  .handle-strip .handle {
+    font-family: var(--serif);
+    font-size: 9.8pt; font-weight: 500; color: var(--brand);
+    flex-shrink: 0;
+  }
+  .handle-strip .follower { font-size: 9pt; color: var(--stone); flex-shrink: 0; }
+  .handle-strip .desc { font-size: 9pt; color: var(--olive); line-height: 1.40; letter-spacing: 0.3pt; flex: 1; }
+
+  .impact-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 5.5mm; }
+  .inf-block-title {
+    margin-top: 2.5mm;
+    font-family: var(--serif);
+    font-size: 9.8pt; font-weight: 500;
+    color: var(--near-black);
+    margin-bottom: 1.5mm; padding-bottom: 0.5mm;
+    border-bottom: 0.3pt dotted var(--border);
+    display: flex; align-items: baseline; gap: 2mm;
+  }
+  .inf-block-title .small {
+    font-family: var(--serif);
+    font-size: 9pt; color: var(--stone);
+    font-weight: 400; margin-left: 0; letter-spacing: 0.2pt;
+  }
+  .art-row {
+    padding: 1.6mm 0;
+    border-bottom: 0.3pt dotted var(--border-soft);
+  }
+  .talk-row {
+    display: flex; justify-content: space-between;
+    align-items: flex-start;
+    gap: 2mm; padding: 1.6mm 0;
+    border-bottom: 0.3pt dotted var(--border-soft);
+  }
+  .art-row:last-of-type, .talk-row:last-of-type { border-bottom: none; }
+  .art-header {
+    display: flex; align-items: baseline;
+    justify-content: space-between;
+    gap: 2mm; padding-right: 3mm;
+  }
+  .art-title, .talk-title {
+    font-size: 9pt; color: var(--near-black);
+    font-weight: 500; line-height: 1.40;
+    flex: 1 1 auto; min-width: 0;
+  }
+  .art-stats, .talk-venue {
+    font-size: 9pt; color: var(--stone);
+    line-height: 1.40; margin-top: 0.5mm; padding-left: 0; letter-spacing: 0.3pt;
+    white-space: nowrap;
+  }
+  .art-stats .em-brand {
+    color: var(--brand);
+  }
+  .art-date {
+    font-size: 9pt; color: var(--stone);
+    font-variant-numeric: tabular-nums;
+    font-weight: 400;
+  }
+  .art-stats .lang-cn, .art-stats .lang-en {
+    display: inline-block;
+    font-size: 9pt; font-weight: 500;
+    margin-right: 0.5mm;
+    letter-spacing: 0.2pt;
+    color: var(--stone);
+  }
+  .talk-date {
+    font-size: 9pt; color: var(--stone); font-weight: 500;
+    white-space: nowrap; font-variant-numeric: tabular-nums;
+    padding-top: 0.3mm;
+  }
+
+  /* SKILLS */
+  .skill-row {
+    display: flex; gap: 2.5mm; padding: 1.7mm 0;
+    border-bottom: 0.3pt dotted var(--border);
+    align-items: baseline;
+  }
+  .skill-row:last-of-type { border-bottom: none; }
+  .skill-label {
+    font-size: 9pt; font-weight: 500;
+    color: var(--brand); letter-spacing: 0.3pt;
+    width: 22mm; flex-shrink: 0;
+    line-height: 1.36;
+  }
+  .skill-body { font-size: 9pt; color: var(--near-black); line-height: 1.40; letter-spacing: 0.3pt; flex: 1; }
+  .skill-body .em-brand { color: var(--brand); }
+
+  .no-break { break-inside: avoid; }
+
+  /* EDUCATION */
+  .edu-row {
+    display: flex; justify-content: space-between;
+    align-items: baseline; font-size: 9.5pt; padding: 1.7mm 0;
+  }
+  .edu-row .school {
+    font-family: var(--serif);
+    font-weight: 500; font-size: 10.7pt;
+  }
+  .edu-row .major { color: var(--olive); font-size: 9.5pt; }
+  .edu-row .date { color: var(--stone); font-variant-numeric: tabular-nums; font-size: 9pt; }
+
+  /* TABLE (kami-table) */
+  table, .kami-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    margin: 6pt 0;
+    break-inside: avoid;
+  }
+  table th, .kami-table th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--dark-warm);
+    padding: 3pt 6pt;
+    border-bottom: 1pt solid var(--border);
+    background: transparent;
+  }
+  table td, .kami-table td {
+    padding: 2pt 6pt;
+    border-bottom: 0.3pt solid var(--border-soft);
+    vertical-align: top;
+  }
+  table.compact th, .kami-table.compact th { padding: 2pt 4pt; font-size: 8pt; }
+  table.compact td, .kami-table.compact td { padding: 1pt 4pt; font-size: 8pt; line-height: 1.4; }
+  table.financial td:not(:first-child), .kami-table.financial td:not(:first-child) {
+    text-align: right; font-variant-numeric: tabular-nums;
+  }
+  table.financial th:not(:first-child), .kami-table.financial th:not(:first-child) { text-align: right; }
+  table.striped tbody tr:nth-child(even) td, .kami-table.striped tbody tr:nth-child(even) td {
+    background: var(--ivory);
+  }
+  table .total td, .kami-table .total td {
+    font-weight: 500; border-top: 1pt solid var(--brand); border-bottom: none; color: var(--near-black);
+  }
+
+  /* DENSE VARIANT: add class="resume--dense" to <body> when 5+ projects overflow */
+  body.resume--dense { font-size: 9pt; }
+  body.resume--dense .proj-text { line-height: 1.38; }
+  body.resume--dense .tl-body { font-size: 8.5pt; }
+  body.resume--dense .project { padding: 1.6mm 0; }
+  body.resume--dense .section-title { margin-top: 4.2mm; margin-bottom: 1.2mm; }
+</style>
+</head>
+<body>
+
+<!-- ===================================================================
+     自动生成，不要直接编辑本文件。
+
+     版式（<head> 与 <style>）逐字节来自 kami V1.10.0 的
+     assets/templates/resume.html —— © Tw93, MIT License。
+     正文结构来自本仓库 assets/campus-body.html。
+
+     要改版式 → 改 kami 或等上游升级；要改章节结构 → 改 campus-body.html。
+     改完重新生成：python3 scripts/make_campus_template.py
+     =================================================================== -->
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     中文校招简历 · 正文结构（本仓库自有内容，非 kami 原文）
+
+     与 kami 原版 resume.html 的区别，以及为什么：
+
+     1. 教育背景提到第 2 位（个人评价之下、实习经历之上）。
+        kami 原版把它放在最后——那是社招布局，工作十年的人学校是脚注。
+        校招相反：学校 / 专业 / 学历是 HR 的第一道筛选信号，必须一眼看到。
+     2. "工作经历"改为"实习经历"。应届生没有工作经历，写"工作经历"
+        会让 HR 以为你是社招投错了。
+     3. 删掉"开源项目 & 独立开发者""AI 判断与行动""对外影响力"。
+        这三节是资深工程师专属，普通应届生填不满，硬填就是注水。
+        确有开源作品的同学可以自行加回（结构见 kami 原模板）。
+     4. 一页制，没有 page-break。校招 HR 一天筛几百份，第二页基本不看。
+     5. metrics 数字条改为可选。多数学生没有拿得出手的四个数字，
+        与其填"参与项目 3 个"这种废话，不如整块删掉。
+
+     所有 {{变量}} 替换为实际内容；不适用的整块删除，不要留空壳。
+     改完验证（两条都要跑）：
+       python3 vendor/kami/scripts/build.py --check-placeholders <本文件>
+       python3 -c "from weasyprint import HTML; HTML('resume.html').write_pdf('out.pdf')"
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<div class="header">
+  <div>
+    <div class="name serif">{{姓名}}</div>
+  </div>
+  <div class="contact">
+    <span class="role">{{求职意向，如"财务管培生"}}</span>
+    <br>
+    <a href="tel:{{PHONE}}">{{PHONE}}</a>
+    <span class="sep">·</span>
+    <a href="mailto:{{EMAIL}}">{{EMAIL}}</a>
+    <span class="sep">·</span>
+    <span class="loc">{{意向城市}}</span>
+    <!-- 有作品集/GitHub/个人主页才加，没有就删掉整个 a 标签：
+         <span class="sep">·</span><a href="{{URL}}">{{展示名}}</a>
+         不要写期望薪资。除非投递渠道明确要求，不要写年龄性别籍贯。 -->
+  </div>
+</div>
+
+<!-- 数字条：可选。只有四个数字都真实且有说服力时才留
+     （如 GPA 3.8/4.0、专业前 5%、3 段实习、CPA 过 4 科）。
+     凑不满四个有分量的数字 → 删掉整个 <div class="metrics"> 块。 -->
+<div class="metrics">
+  <div class="metric"><span class="metric-value serif">{{数字}}<span class="unit">{{单位}}</span></span><span class="metric-label">{{标签}}</span></div>
+  <div class="metric"><span class="metric-value serif">{{数字}}<span class="unit">{{单位}}</span></span><span class="metric-label">{{标签}}</span></div>
+  <div class="metric"><span class="metric-value serif">{{数字}}<span class="unit">{{单位}}</span></span><span class="metric-label">{{标签}}</span></div>
+  <div class="metric"><span class="metric-value serif">{{数字}}<span class="unit">{{单位}}</span></span><span class="metric-label">{{标签}}</span></div>
+</div>
+
+<section>
+  <div class="section-title">个人评价</div>
+  <div class="summary">
+    {{60-80 字。结构建议：届别+学历+专业 → 最能支撑目标岗位的 2-3 项能力（要有证据，别写"学习能力强"）→ 求职方向。不要写性格形容词。}}
+  </div>
+</section>
+
+<!-- ═══ 教育背景：校招简历的第一筛选项，必须在实习经历之前 ═══ -->
+<section>
+  <div class="section-title">教育背景</div>
+  <div class="edu-row">
+    <div>
+      <span class="school serif">{{学校}}</span>
+      <span class="major">　· {{学院}} · {{专业}} · {{学历，如"硕士"}}</span>
+    </div>
+    <div class="date">{{起止时间}}</div>
+  </div>
+  <!-- 下面这行只在有优势时保留：GPA/排名靠前、主修课与岗位强相关、有奖学金。
+       成绩平平就整行删掉，留白好过暴露短板。 -->
+  <div class="proj-lines">
+    <div class="proj-row">
+      <div class="proj-label">在校</div>
+      <div class="proj-text">{{GPA / 专业排名 / 与目标岗位相关的主修课 3-5 门 / 奖学金。只写有优势的部分。}}</div>
+    </div>
+  </div>
+  <!-- 本硕都要写就复制上面的 edu-row（含 proj-lines），按时间倒序，硕士在前 -->
+</section>
+
+<!-- ═══ 实习经历：应届生的主战场，按时间倒序 ═══ -->
+<section>
+  <div class="section-title">实习经历</div>
+
+  <div class="project">
+    <div class="proj-head">
+      <span class="proj-name serif">{{公司名}}</span>
+      <span class="proj-kind">· {{部门}} · {{岗位}}</span>
+      <span class="proj-role">{{起止时间}}</span>
+    </div>
+    <div class="proj-lines">
+      <div class="proj-row">
+        <div class="proj-label">背景</div>
+        <div class="proj-text">{{~50 字：什么业务场景、要解决什么问题、你在团队里的位置。}}</div>
+      </div>
+      <div class="proj-row">
+        <div class="proj-label">动作</div>
+        <div class="proj-text">{{~70 字：你本人具体做了什么。用动词开头，写清方法和工具。别写团队做了什么。}}</div>
+      </div>
+      <div class="proj-row">
+        <div class="proj-label">结果</div>
+        <div class="proj-text">{{~60 字：真实结果。有数字写数字并 <span class="hl">高亮</span>；没有数字就写规模与状态（如"覆盖 3 条产线，交接给正式员工沿用"），禁止编造指标。}}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第二段实习：整块复制上面的 <div class="project">。
+       没有实习经历 → 删掉整个 section，把项目经历提上来，不要留空标题。 -->
+</section>
+
+<!-- ═══ 项目经历：课程项目、竞赛、科研、自己做的东西都算 ═══ -->
+<section>
+  <div class="section-title">项目经历</div>
+
+  <div class="project">
+    <div class="proj-head">
+      <span class="proj-name serif">{{项目名}}</span>
+      <span class="proj-kind">· {{项目类型，如"课程项目/竞赛/科研"}}</span>
+      <span class="proj-role">{{时间}}</span>
+    </div>
+    <div class="proj-lines">
+      <div class="proj-row">
+        <div class="proj-label">背景</div>
+        <div class="proj-text">{{~50 字：项目是什么、为什么做、几个人做、你负责哪块。}}</div>
+      </div>
+      <div class="proj-row">
+        <div class="proj-label">动作</div>
+        <div class="proj-text">{{~70 字：你本人的具体动作、方法、工具。}}</div>
+      </div>
+      <div class="proj-row">
+        <div class="proj-label">结果</div>
+        <div class="proj-text">{{~60 字：真实结果与状态。demo 就写 demo，别写成上线产品。}}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 技能证书 ═══ -->
+<section>
+  <div class="section-title">技能证书</div>
+  <div class="skill-row">
+    <div class="skill-label">{{专业技能}}</div>
+    <div class="skill-body">{{按熟练度排序，会什么写什么。<span class="em-brand">最强的放最前</span>，不要罗列没用过的。}}</div>
+  </div>
+  <div class="skill-row">
+    <div class="skill-label">{{工具软件}}</div>
+    <div class="skill-body">{{如 Excel（数据透视/VBA）、SQL、Python、SAP。括号里注明会到什么程度。}}</div>
+  </div>
+  <div class="skill-row">
+    <div class="skill-label">{{证书}}</div>
+    <div class="skill-body">{{已过的写"已通过"，在考的写"在考（已过X科）"，<span class="em-brand">禁止把在考写成已过</span>。}}</div>
+  </div>
+  <div class="skill-row">
+    <div class="skill-label">{{语言}}</div>
+    <div class="skill-body">{{四六级/雅思托福分数。没考过就删掉这一行。}}</div>
+  </div>
+</section>
+
+<!-- ═══ 荣誉奖项：可选。没有分量的奖项不如不写，整个 section 删掉 ═══ -->
+<section>
+  <div class="section-title">荣誉奖项</div>
+  <div class="skill-row">
+    <div class="skill-label">{{年份}}</div>
+    <div class="skill-body">{{奖项名称 · 级别（国家级/省级/校级）· 排名或获奖比例}}</div>
+  </div>
+</section>
+
+</body>
+</html>
