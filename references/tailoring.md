@@ -98,7 +98,13 @@ python3 $SKILL_DIR/scripts/resume_store.py photo \
 
 ## W5 渲染
 
-1. `bash $SKILL_DIR/vendor/kami/scripts/ensure-fonts.sh` —— 失败**不阻断**（模板自带 CDN 与系统字体兜底链）。
+1. **不要跑 `vendor/kami/scripts/ensure-fonts.sh`。** 那个脚本下载的是仓耳今楷（商用授权字体），本仓库的校招模板已经把它从字体栈里移除了。需要中文字体就装自由字体：
+
+```
+brew install --cask font-noto-serif-cjk-sc font-lxgw-wenkai
+```
+
+一个都没装也能出稿，会退到系统宋体。（用 kami 原版 `resume.html` 出英文简历时才需要 ensure-fonts.sh，中文校招流程用不到。）
 
 2. **渲染前先查占位符**（kami V1.10.0 起提供，**这一步不可跳**）：
 
@@ -129,6 +135,24 @@ print('已渲染顶部，去看这张图')"
 然后**真的去读那张 png**。`get_images()` 返回 1 张只能说明 PDF 里有这个图片对象，**不等于它显示出来了**——尺寸算错、被别的元素盖住、data URI 损坏，任何一种都会让对象在、画面空。踩过一次：验证脚本打印"证件照 17.1x24.5mm ✓"，用户打开却说"没有照片"。
 
 这和"文件存在不等于能跑"是同一类错误：**验证要验到用户实际看到的那一层**。缺 pymupdf 就跳过这步，并在交付时明确告诉用户"照片没法自动核验，你自己确认一下"。
+
+3.6. **查 PDF 里嵌了什么字体**（不可跳过）：
+
+```
+python3 -c "
+import fitz, sys
+d = fitz.open('<版本目录>/resume.pdf')
+fonts = sorted({f[3] for pg in d for f in pg.get_fonts(full=True)})
+paid = [f for f in fonts if any(k in f for k in ('Tsanger','FZ','汉仪','HYQi','MFont'))]
+print('嵌入字体：'); [print('  ', f) for f in fonts]
+sys.exit('！嵌入了商用字体：%s' % paid if paid else 0)"
+```
+
+**PDF 会把用到的字体子集嵌进去**，所以字体授权跟着简历一起发出去。kami 原版 `--serif` 首选仓耳今楷，而且 `@font-face` 里挂了 jsDelivr CDN 地址——**本机没装也会从 CDN 抓下来嵌进 PDF**。实际发生过：生成的简历里确实嵌着 `TsangerJinKai02`。
+
+校招模板已经把它从字体栈移除，这一步是防回归：谁要是哪天把 `--serif` 改回去、或者误用了 kami 原版 `resume.html`，这里会拦下来。
+
+检出商用字体 → 别交付，回去查 `--serif` 是不是被改动过。
 
 4. **查 markdown 残留**（同样是 V1.10.0 起提供，同样必须传绝对路径）：
 

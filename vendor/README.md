@@ -29,9 +29,27 @@
 
 **后果（必须知道）**：`kami/SKILL.md` 是上游原文，里面会提到图表路由、marp 幻灯片、韩文模板等本副本**没有内嵌**的东西。走到那些分支会找不到文件。`references/tailoring.md` 已经写明简历流程要声明跳过哪些步骤——改那份文档时别把这条删了。
 
-### 字体
+### 字体：本仓库的中文流程不用商用字体
 
-中文主字体仓耳今楷（TsangerJinKai02）是**商业授权字体，上游明令禁止随包分发**，因此不进仓库。构建中文 PDF 前运行：
+上游 kami 的 `--serif` 首选仓耳今楷（TsangerJinKai02），那是**商业授权字体**。更要紧的是模板的 `@font-face` 里挂了 jsDelivr CDN 地址——**本机没装也会在渲染时从 CDN 抓下来嵌进 PDF**。PDF 会把用到的字形子集嵌进去，等于每份投出去的简历都带着商用字体。这个坑实际踩到过：生成的简历里确实嵌着 `TsangerJinKai02`。
+
+因此本仓库的中文校招模板（`assets/templates/resume-campus-cn.html`）**重写了 `--serif`，把仓耳今楷移出字体栈**。它不在栈里，上游那两条 `@font-face` 就没有选择器引用，CDN 不会被请求。
+
+现用字体栈全部是 SIL OFL 1.1（允许商用与嵌入）：
+
+| 字体 | 授权 | 说明 |
+|---|---|---|
+| Noto Serif CJK SC（思源宋体） | SIL OFL 1.1 | 默认。宋体，中文简历惯用 |
+| LXGW WenKai（霞鹜文楷） | SIL OFL 1.1 | 楷体，最接近 kami 原本观感 |
+| Songti SC / STSong | Apple 系统字体 | 仅作兜底，不主动使用 |
+
+```bash
+brew install --cask font-noto-serif-cjk-sc font-lxgw-wenkai
+```
+
+一个都没装也能出稿，会退到系统宋体。`references/tailoring.md` 的 W5 有一道**嵌入字体检查**，专门防止哪天有人把商用字体改回去。
+
+**不要为中文简历跑 `ensure-fonts.sh`**——那个脚本下的就是仓耳今楷。只有用 kami 原版 `resume.html`/`resume-en.html` 时才需要它：
 
 ```bash
 bash vendor/kami/scripts/ensure-fonts.sh

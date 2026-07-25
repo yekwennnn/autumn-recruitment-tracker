@@ -22,6 +22,29 @@
      ═══════════════════════════════════════════════════════════════════ -->
 
 <style>
+  /* ── 字体：只用 SIL OFL 1.1 授权的自由字体，规避商用字体纠纷 ──
+     kami 原版 --serif 首选 "TsangerJinKai02"（仓耳今楷），那是**商用授权字体**，
+     而且模板的 @font-face 里挂了 jsDelivr CDN 地址——就算本机没装，WeasyPrint
+     渲染时也会从 CDN 抓下来直接嵌进 PDF。实测过：生成的简历里确实嵌着
+     TsangerJinKai02，等于每份投出去的 PDF 都带着商用字体。
+
+     这里把 --serif 整条重写，移除 TsangerJinKai02。它一旦不在字体栈里，
+     上游那两条 @font-face 就没有任何选择器引用，CDN 也不会被请求。
+
+     栈内字体授权（都允许商用与嵌入 PDF）：
+       Noto Serif CJK SC  思源宋体      SIL OFL 1.1   默认。宋体，中文简历惯用，笔画实
+       LXGW WenKai        霞鹜文楷      SIL OFL 1.1   楷体，最接近 kami 原本观感，偏软
+       Songti SC / STSong 苹果系统字体  仅作兜底
+     装字体：brew install --cask font-noto-serif-cjk-sc font-lxgw-wenkai
+     一个都没装也能出稿，会退到系统宋体。
+
+     想改用楷体，把 "LXGW WenKai" 调到第一位即可。不要把 TsangerJinKai02 加回来。 */
+  :root {
+    --serif: "Noto Serif CJK SC", "Source Han Serif SC", "LXGW WenKai",
+             "Songti SC", "STSong", Georgia, serif;
+    --sans: var(--serif);
+  }
+
   /* ── 校招版对 kami 版式的唯一覆盖，改动理由必须写在这里 ──
      kami 的 .proj-label 默认 11mm。9pt 下一个汉字约 9pt≈3.2mm，四字标签需要
      ≈12.7mm，于是"风险合规"会被切成"风险合"+"规"两行——resume-jd-fit 记录的
