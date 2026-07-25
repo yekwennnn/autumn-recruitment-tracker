@@ -37,7 +37,6 @@
   :root {
     --parchment: #f5f4ed;
     --ivory:     #faf9f5;
-    --sand:      #e8e6dc;
     --border:    #e8e6dc;
     --border-soft: #e5e3d8;
     --near-black: #141413;
@@ -46,7 +45,6 @@
     --stone:     #6b6a64;
     --brand:     #1B365D;
     --brand-tint: #EEF2F7;          /* solid equivalent of rgba(1B365D, 0.08), avoids tag double-rectangle bug */
-    --brand-tint-strong: #E4ECF5;   /* solid equivalent of rgba(1B365D, 0.14) */
     --serif: "TsangerJinKai02", "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", "STSong", Georgia, serif;
     --sans: var(--serif);
   }
@@ -78,9 +76,9 @@
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    padding-bottom: 3mm;
-    margin-bottom: 3mm;
-    border-bottom: 0.5pt solid #e3baa9;
+    margin-bottom: 4.2mm;
+    padding-bottom: 2.3mm;
+    border-bottom: 0.6pt solid var(--border);
   }
   .header > div:first-child { flex-shrink: 0; }
   .name {
@@ -117,16 +115,26 @@
   }
   .contact a { color: var(--dark-warm); }
   .contact .loc { color: var(--olive); font-weight: 500; }
+  .contact .role { color: var(--brand); font-size: 10.5pt; font-weight: 500; }
+  .contact .sep { color: var(--border); margin: 0 0.4em; }
 
   /* METRICS */
-  .metrics { display: flex; gap: 6mm; margin-bottom: 3mm; margin-left: 0; margin-right: 0; }
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 6mm;
+    margin-bottom: 3mm;
+    margin-left: 0;
+    margin-right: 0;
+  }
   .metric {
-    flex: 1;
     background: transparent;
-    padding: 1mm 0;
+    padding: 1mm 0 1.2mm;
     display: flex;
-    align-items: baseline;
-    gap: 1.8mm;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7mm;
+    min-width: 0;
     break-inside: avoid;
   }
   .metric-value {
@@ -138,7 +146,12 @@
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
-  .metric-label { font-size: 9pt; color: var(--olive); line-height: 1.2; }
+  .metric-label {
+    font-size: 9pt;
+    color: var(--olive);
+    line-height: 1.2;
+    white-space: nowrap;
+  }
 
   .metric-value .unit {
     font-size: 10.5pt;
@@ -148,8 +161,6 @@
   }
 
   .metrics--stack .metric {
-    flex-direction: column;
-    align-items: flex-start;
     gap: 0.5mm;
     padding-bottom: 2mm;
     border-bottom: 0.3pt dotted var(--border);
@@ -161,16 +172,15 @@
     font-size: 12.5pt;
     font-weight: 500;
     color: var(--near-black);
-    border-left: 2.5pt solid var(--brand);
-    border-radius: 1.5pt;
-    padding: 0 0 0 8pt;
-    margin: 5mm 0 1.6mm 0;
+    border-bottom: 0.5pt solid var(--border);
+    padding: 0 0 1mm 0;
+    margin: 5.8mm 0 1.7mm 0;
     display: flex;
     align-items: baseline;
+    justify-content: space-between;
     gap: 2mm;
   }
   .section-title .sub {
-    margin-left: auto;
     font-family: var(--serif);
     font-weight: 400;
     font-size: 9pt;
@@ -215,24 +225,23 @@
 
   /* PROJECTS */
   .project {
-    padding: 1.2mm 0 1.2mm 0;
-    border-top: 0.4pt solid var(--border-soft);
+    padding: 2.6mm 0;
     break-inside: avoid;
   }
-  .project:first-of-type { border-top: 0.4pt solid var(--border); padding-top: 1.2mm; }
+  .project:first-of-type { padding-top: 1.2mm; }
   .proj-head {
-    display: flex; align-items: baseline;
-    gap: 2mm; margin-bottom: 0.75mm;
+    display: block; margin-bottom: 0.75mm;
   }
   .proj-name {
     font-family: var(--serif);
     font-size: 11pt; font-weight: 500; color: var(--near-black);
   }
-  .proj-kind { font-size: 11pt; color: var(--olive); }
+  .proj-kind { font-size: 11pt; color: var(--olive); margin-left: 1.5mm; }
   .proj-role {
     font-size: 9pt; color: var(--brand); font-weight: 500;
-    margin-left: auto; background: #EEF2F7;
+    float: right; background: #EEF2F7;
     padding: 0.4mm 1.2mm; border-radius: 2pt; letter-spacing: 0.05pt;
+    white-space: nowrap;
   }
   .proj-lines { display: table; width: 100%; }
   .proj-row { display: table-row; }
@@ -251,8 +260,7 @@
 
   .team-culture {
     margin-top: 2mm; padding: 1.5mm 2.5mm;
-    background: transparent;
-    border-left: 1.4pt solid var(--brand);
+    background: var(--brand-tint);
     border-radius: 2pt;
     font-size: 9pt; color: var(--olive); line-height: 1.40;
     break-inside: avoid;
@@ -303,7 +311,7 @@
     margin-top: 2.5mm;
     padding: 1.8mm 2.8mm;
     background: var(--brand-tint);
-    border-left: 1.4pt solid var(--brand);
+    border-radius: 2pt;
     font-size: 9pt; line-height: 1.40;
     color: var(--near-black);
     letter-spacing: 0.3pt;
@@ -495,7 +503,8 @@
   body.resume--dense { font-size: 9pt; }
   body.resume--dense .proj-text { line-height: 1.38; }
   body.resume--dense .tl-body { font-size: 8.5pt; }
-  body.resume--dense .section-title { margin-top: 3.5mm; margin-bottom: 1.2mm; }
+  body.resume--dense .project { padding: 1.6mm 0; }
+  body.resume--dense .section-title { margin-top: 4.2mm; margin-bottom: 1.2mm; }
 </style>
 </head>
 <body>
@@ -503,7 +512,7 @@
 <!-- =====================================================================
      使用说明：
  - 所有 {{变量}} 替换为实际内容
- - 删除不适用的 section（如无开源/AI判断/对外影响力）
+ - 删除不适用的 section，如无开源/AI判断/对外影响力
  - 项目可加减，每个严格遵守 角色/动作/结果 三段式
  - 改完验证：必须 2 页
        python3 -c "from weasyprint import HTML; HTML('resume.html').write_pdf('out.pdf')"
@@ -518,7 +527,18 @@
     <div class="name serif">{{姓名}}<span class="alias">{{别名/英文名}}</span></div>
   </div>
   <div class="contact">
-    <span style="color: var(--brand); font-size: 10.5pt; font-weight: 500;">{{岗位定位，如"AI / Agent 工程"}}</span>　·　<a href="{{GITHUB_URL}}">GitHub @{{GITHUB_ID}}</a>　·　<a href="{{X_URL}}">X @{{X_ID}}</a>　·　<a href="tel:{{PHONE}}">{{PHONE}}</a>　·　<a href="mailto:{{EMAIL}}">{{EMAIL}}</a>　·　{{年龄}} 岁在{{城市}}
+    <span class="role">{{岗位定位，如"AI / Agent 工程"}}</span>
+    <br>
+    <a href="{{GITHUB_URL}}">GitHub @{{GITHUB_ID}}</a>
+    <span class="sep">·</span>
+    <a href="{{X_URL}}">X @{{X_ID}}</a>
+    <span class="sep">·</span>
+    <a href="tel:{{PHONE}}">{{PHONE}}</a>
+    <span class="sep">·</span>
+    <a href="mailto:{{EMAIL}}">{{EMAIL}}</a>
+    <span class="sep">·</span>
+    <span class="loc">{{城市}}</span>
+    <!-- 如投递渠道需要且用户提供，可在城市后追加： · 年龄 · 性别。不要写期望薪资。 -->
   </div>
 </div>
 
@@ -533,12 +553,12 @@
 <section>
   <div class="section-title">个人简介</div>
   <div class="summary">
-    {{80 字以内。建议结构：现任职位 + 级别 + 时长。团队构成（人数、梯队、协作方）。长期演进方向。核心沉淀领域（4-6 个方向）。}}
+    {{80 字以内。建议结构：现任职位 + 级别 + 时长。团队构成：人数、梯队、协作方。长期演进方向。核心沉淀领域：4-6 个方向。}}
   </div>
 </section>
 
 <section>
-  <div class="section-title">工作经历<span class="sub">{{起始时间}} - 至今（{{关键里程碑}}）</span></div>
+  <div class="section-title">工作经历<span class="sub">{{起始时间}} - 至今 · {{关键里程碑}}</span></div>
 
   <!-- Timeline 3 步：长期演进信号 -->
   <div class="timeline">
@@ -583,20 +603,20 @@
     <div class="proj-head">
       <span class="proj-name serif">{{项目名}}</span>
       <span class="proj-kind">· {{项目类型}}</span>
-      <span class="proj-role">{{角色定位}}</span>
+      <span class="proj-role">{{角色定位，如"方向主导"}}</span>
     </div>
     <div class="proj-lines">
       <div class="proj-row">
         <div class="proj-label">角色</div>
-        <div class="proj-text">{{~60 字}}</div>
+        <div class="proj-text">{{~60 字：项目是什么 + 为什么做 + 你的位置}}</div>
       </div>
       <div class="proj-row">
         <div class="proj-label">动作</div>
-        <div class="proj-text">{{~80 字}}</div>
+        <div class="proj-text">{{~80 字：技术方案 / 关键决策 / 执行路径}}</div>
       </div>
       <div class="proj-row">
         <div class="proj-label">结果</div>
-        <div class="proj-text">{{~100 字，含 <span class="hl">关键数字</span>}}</div>
+        <div class="proj-text">{{~100 字：数据为王。<span class="hl">关键数字</span> 高亮 1-2 处。}}</div>
       </div>
     </div>
   </div>
@@ -605,20 +625,20 @@
     <div class="proj-head">
       <span class="proj-name serif">{{项目名}}</span>
       <span class="proj-kind">· {{项目类型}}</span>
-      <span class="proj-role">{{角色}}</span>
+      <span class="proj-role">{{角色定位，如"方向主导"}}</span>
     </div>
     <div class="proj-lines">
       <div class="proj-row">
         <div class="proj-label">角色</div>
-        <div class="proj-text">{{项目背景和定位}}</div>
+        <div class="proj-text">{{~60 字：项目是什么 + 为什么做 + 你的位置}}</div>
       </div>
       <div class="proj-row">
         <div class="proj-label">动作</div>
-        <div class="proj-text">{{执行路径}}</div>
+        <div class="proj-text">{{~80 字：技术方案 / 关键决策 / 执行路径}}</div>
       </div>
       <div class="proj-row">
         <div class="proj-label">结果</div>
-        <div class="proj-text">{{可量化结果，含 <span class="hl">关键数字</span>}}</div>
+        <div class="proj-text">{{~100 字：数据为王。<span class="hl">关键数字</span> 高亮 1-2 处。}}</div>
       </div>
     </div>
   </div>
@@ -642,27 +662,27 @@
     </div>
     <div class="os-item">
       <span class="os-name serif"><a href="{{URL}}">{{项目名}}</a></span>
-      <span class="os-desc">{{描述}}</span>
+      <span class="os-desc">{{语言 + 核心定位 + 平台}}</span>
       <span class="os-star big">★ {{STARS}}</span>
     </div>
     <div class="os-item">
       <span class="os-name serif"><a href="{{URL}}">{{项目名}}</a></span>
-      <span class="os-desc">{{描述}}</span>
+      <span class="os-desc">{{语言 + 核心定位 + 平台}}</span>
       <span class="os-star">★ {{STARS}}</span>
     </div>
     <div class="os-item">
       <span class="os-name serif"><a href="{{URL}}">{{项目名}}</a></span>
-      <span class="os-desc">{{描述}}</span>
+      <span class="os-desc">{{语言 + 核心定位 + 平台}}</span>
       <span class="os-star">★ {{STARS}}</span>
     </div>
     <div class="os-item">
       <span class="os-name serif"><a href="{{URL}}">{{项目名}}</a></span>
-      <span class="os-desc">{{描述}}</span>
+      <span class="os-desc">{{语言 + 核心定位 + 平台}}</span>
       <span class="os-star">★ {{STARS}}</span>
     </div>
     <div class="os-item">
       <span class="os-name serif"><a href="{{URL}}">{{项目名}}</a></span>
-      <span class="os-desc">{{描述}}</span>
+      <span class="os-desc">{{语言 + 核心定位 + 平台}}</span>
       <span class="os-star">★ {{STARS}}</span>
     </div>
   </div>
@@ -684,13 +704,13 @@
     <div class="conv-card">
       <div class="conv-head"><span class="year">{{时间}}</span>{{事件标题}}</div>
       <div class="conv-body">
-        {{具体做了什么判断或行动}}
+        {{具体做了什么判断或行动，为什么证明判断力}}
       </div>
     </div>
     <div class="conv-card">
       <div class="conv-head"><span class="year">{{时间}}</span>{{事件标题}}</div>
       <div class="conv-body">
-        {{具体做了什么判断或行动}}
+        {{具体做了什么判断或行动，为什么证明判断力}}
       </div>
     </div>
   </div>
@@ -720,7 +740,7 @@
           <a class="art-title" href="{{URL}}">《{{文章标题}}》</a>
           <span class="art-date">{{日期}}</span>
         </div>
-        <div class="art-stats">{{浏览量 / 赞数}}</div>
+        <div class="art-stats">{{浏览量 / 赞数 / 影响力指标}}</div>
       </div>
     </div>
 
@@ -746,7 +766,7 @@
 
 <section>
   <div class="section-title">核心能力</div>
-  <!-- 5 项固定结构，每项至少 1 处橙色高亮 -->
+  <!-- 5 项固定结构，每项至少 1 处品牌色高亮 -->
   <div class="skill-row">
     <div class="skill-label">{{能力 1<br>标签}}</div>
     <div class="skill-body">{{描述。至少 <span class="em-brand">1 处强调</span>}}</div>

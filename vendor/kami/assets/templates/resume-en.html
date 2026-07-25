@@ -22,7 +22,6 @@
   :root {
     --parchment: #f5f4ed;
     --ivory:     #faf9f5;
-    --sand:      #e8e6dc;
     --border:    #e8e6dc;
     --border-soft: #e5e3d8;
     --near-black: #141413;
@@ -31,7 +30,6 @@
     --stone:     #6b6a64;
     --brand:     #1B365D;
     --brand-tint: #EEF2F7;
-    --brand-tint-strong: #E4ECF5;
 
     --serif: Charter, Georgia,
              Palatino, "Times New Roman", serif;
@@ -66,10 +64,9 @@
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    margin-bottom: 3mm;
-    border-left: 2.5pt solid var(--brand);
-    border-radius: 1.5pt;
-    padding-left: 8pt;
+    margin-bottom: 4.2mm;
+    padding-bottom: 2.3mm;
+    border-bottom: 0.6pt solid var(--border);
   }
   .header > div:first-child { flex-shrink: 0; }
   .name {
@@ -105,18 +102,24 @@
   .contact .loc { color: var(--olive); font-weight: 500; }
 
   /* METRICS */
-  .metrics { display: flex; gap: 7mm; margin-bottom: 3mm; }
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 5mm;
+    margin-bottom: 3mm;
+  }
   .metric {
-    flex: 1;
-    padding: 1mm 0;
+    padding: 1mm 0 1.2mm;
     display: flex;
-    align-items: baseline;
-    gap: 2mm;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7mm;
+    min-width: 0;
     break-inside: avoid;
   }
   .metric-value {
     font-family: var(--serif);
-    font-size: 14pt;
+    font-size: 13pt;
     font-weight: 500;
     color: var(--brand);
     line-height: 1;
@@ -129,11 +132,14 @@
     font-weight: 500;
     color: var(--brand);
   }
-  .metric-label { font-size: 9pt; color: var(--olive); line-height: 1.2; }
+  .metric-label {
+    font-size: 9pt;
+    color: var(--olive);
+    line-height: 1.2;
+    white-space: nowrap;
+  }
 
   .metrics--stack .metric {
-    flex-direction: column;
-    align-items: flex-start;
     gap: 0.5mm;
     padding-bottom: 2mm;
     border-bottom: 0.3pt dotted var(--border);
@@ -145,16 +151,15 @@
     font-size: 13pt;
     font-weight: 500;
     color: var(--near-black);
-    border-left: 2.5pt solid var(--brand);
-    border-radius: 1.5pt;
-    padding: 0 0 0 8pt;
-    margin: 5mm 0 2mm 0;
+    border-bottom: 0.5pt solid var(--border);
+    padding: 0 0 1mm 0;
+    margin: 5.8mm 0 2mm 0;
     display: flex;
     align-items: baseline;
+    justify-content: space-between;
     gap: 2.5mm;
   }
   .section-title .sub {
-    margin-left: auto;
     font-family: var(--sans);
     font-weight: 400;
     font-size: 9pt;
@@ -188,28 +193,26 @@
 
   /* PROJECTS */
   .project {
-    padding: 1.6mm 0;
-    border-top: 0.4pt solid var(--border-soft);
+    padding: 2.6mm 0;
     break-inside: avoid;
   }
   .project:first-of-type {
-    border-top: 0.4pt solid var(--border);
     padding-top: 1.6mm;
   }
   .proj-head {
-    display: flex; align-items: baseline;
-    gap: 2mm; margin-bottom: 0.9mm;
+    display: block; margin-bottom: 0.9mm;
   }
   .proj-name {
     font-family: var(--serif);
     font-size: 11pt; font-weight: 500; color: var(--near-black);
   }
-  .proj-kind { font-size: 11pt; color: var(--olive); }
+  .proj-kind { font-size: 11pt; color: var(--olive); margin-left: 1.5mm; }
   .proj-role {
     font-size: 9pt; color: var(--brand); font-weight: 500;
-    margin-left: auto; background: #EEF2F7;
+    float: right; background: #EEF2F7;
     padding: 0.4mm 1.6mm; border-radius: 2pt; letter-spacing: 0.3pt;
     text-transform: uppercase;
+    white-space: nowrap;
   }
   .proj-lines { display: table; width: 100%; }
   .proj-row { display: table-row; }
@@ -272,7 +275,6 @@
     margin-top: 2.5mm;
     padding: 1.8mm 3mm;
     background: var(--brand-tint);
-    border-left: 1.4pt solid var(--brand);
     border-radius: 2pt;
     font-size: 9pt; line-height: 1.45;
     color: var(--near-black);
@@ -445,7 +447,8 @@
   /* DENSE VARIANT: add class="resume--dense" to <body> when 5+ projects overflow */
   body.resume--dense { font-size: 9pt; }
   body.resume--dense .proj-text { line-height: 1.40; }
-  body.resume--dense .section-title { margin-top: 3.5mm; margin-bottom: 1.5mm; }
+  body.resume--dense .project { padding: 1.6mm 0; }
+  body.resume--dense .section-title { margin-top: 4.2mm; margin-bottom: 1.5mm; }
 </style>
 </head>
 <body>
@@ -482,10 +485,10 @@
 
 <!-- Four strongest numeric badges -->
 <div class="metrics">
-  <div class="metric"><span class="metric-value serif">{{NUMBER}}<span class="unit">{{UNIT}}</span></span><span class="metric-label">{{LABEL}}</span></div>
-  <div class="metric"><span class="metric-value serif">{{NUMBER}}<span class="unit">{{UNIT}}</span></span><span class="metric-label">{{LABEL}}</span></div>
-  <div class="metric"><span class="metric-value serif">{{NUMBER}}<span class="unit">{{UNIT}}</span></span><span class="metric-label">{{LABEL}}</span></div>
-  <div class="metric"><span class="metric-value serif">{{NUMBER}}<span class="unit">{{UNIT}}</span></span><span class="metric-label">{{LABEL}}</span></div>
+  <div class="metric"><span class="metric-value serif">{{NUMBER}}</span><span class="metric-label">{{LABEL}}</span></div>
+  <div class="metric"><span class="metric-value serif">{{NUMBER}}</span><span class="metric-label">{{LABEL}}</span></div>
+  <div class="metric"><span class="metric-value serif">{{NUMBER}}</span><span class="metric-label">{{LABEL}}</span></div>
+  <div class="metric"><span class="metric-value serif">{{NUMBER}}</span><span class="metric-label">{{LABEL}}</span></div>
 </div>
 
 <section>
@@ -541,20 +544,20 @@
     <div class="proj-head">
       <span class="proj-name serif">{{PROJECT_NAME}}</span>
       <span class="proj-kind">· {{PROJECT_TYPE}}</span>
-      <span class="proj-role">{{ROLE}}</span>
+      <span class="proj-role">{{ROLE - e.g. tech lead}}</span>
     </div>
     <div class="proj-lines">
       <div class="proj-row">
         <div class="proj-label">Role</div>
-        <div class="proj-text">{{~40 words.}}</div>
+        <div class="proj-text">{{~40 words: what the project is, why it existed, what your seat at the table was.}}</div>
       </div>
       <div class="proj-row">
         <div class="proj-label">Actions</div>
-        <div class="proj-text">{{~55 words.}}</div>
+        <div class="proj-text">{{~55 words: technical approach, key decisions, execution path.}}</div>
       </div>
       <div class="proj-row">
         <div class="proj-label">Impact</div>
-        <div class="proj-text">{{~65 words, include <span class="hl">key figures</span>.}}</div>
+        <div class="proj-text">{{~65 words: numbers-first. Highlight <span class="hl">1-2 key figures</span>.}}</div>
       </div>
     </div>
   </div>
@@ -563,20 +566,20 @@
     <div class="proj-head">
       <span class="proj-name serif">{{PROJECT_NAME}}</span>
       <span class="proj-kind">· {{PROJECT_TYPE}}</span>
-      <span class="proj-role">{{ROLE}}</span>
+      <span class="proj-role">{{ROLE - e.g. tech lead}}</span>
     </div>
     <div class="proj-lines">
       <div class="proj-row">
         <div class="proj-label">Role</div>
-        <div class="proj-text">{{Project context and your seat.}}</div>
+        <div class="proj-text">{{~40 words: what the project is, why it existed, what your seat at the table was.}}</div>
       </div>
       <div class="proj-row">
         <div class="proj-label">Actions</div>
-        <div class="proj-text">{{Execution path.}}</div>
+        <div class="proj-text">{{~55 words: technical approach, key decisions, execution path.}}</div>
       </div>
       <div class="proj-row">
         <div class="proj-label">Impact</div>
-        <div class="proj-text">{{Quantifiable outcome with <span class="hl">key figures</span>.}}</div>
+        <div class="proj-text">{{~65 words: numbers-first. Highlight <span class="hl">1-2 key figures</span>.}}</div>
       </div>
     </div>
   </div>
@@ -600,27 +603,27 @@
     </div>
     <div class="os-item">
       <span class="os-name serif"><a href="{{URL}}">{{PROJECT}}</a></span>
-      <span class="os-desc">{{Description.}}</span>
+      <span class="os-desc">{{Stack + core positioning + platform.}}</span>
       <span class="os-star big">★ {{STARS}}</span>
     </div>
     <div class="os-item">
       <span class="os-name serif"><a href="{{URL}}">{{PROJECT}}</a></span>
-      <span class="os-desc">{{Description.}}</span>
+      <span class="os-desc">{{Stack + core positioning + platform.}}</span>
       <span class="os-star">★ {{STARS}}</span>
     </div>
     <div class="os-item">
       <span class="os-name serif"><a href="{{URL}}">{{PROJECT}}</a></span>
-      <span class="os-desc">{{Description.}}</span>
+      <span class="os-desc">{{Stack + core positioning + platform.}}</span>
       <span class="os-star">★ {{STARS}}</span>
     </div>
     <div class="os-item">
       <span class="os-name serif"><a href="{{URL}}">{{PROJECT}}</a></span>
-      <span class="os-desc">{{Description.}}</span>
+      <span class="os-desc">{{Stack + core positioning + platform.}}</span>
       <span class="os-star">★ {{STARS}}</span>
     </div>
     <div class="os-item">
       <span class="os-name serif"><a href="{{URL}}">{{PROJECT}}</a></span>
-      <span class="os-desc">{{Description.}}</span>
+      <span class="os-desc">{{Stack + core positioning + platform.}}</span>
       <span class="os-star">★ {{STARS}}</span>
     </div>
   </div>
@@ -642,13 +645,13 @@
     <div class="conv-card">
       <div class="conv-head"><span class="year">{{DATE}}</span>{{EVENT_TITLE}}</div>
       <div class="conv-body">
-        {{Specific call or action.}}
+        {{Specific call you made or action you took, and the downstream evidence that the judgment was right.}}
       </div>
     </div>
     <div class="conv-card">
       <div class="conv-head"><span class="year">{{DATE}}</span>{{EVENT_TITLE}}</div>
       <div class="conv-body">
-        {{Specific call or action.}}
+        {{Specific call you made or action you took, and the downstream evidence that the judgment was right.}}
       </div>
     </div>
   </div>
@@ -678,7 +681,7 @@
           <a class="art-title" href="{{URL}}">{{ARTICLE_TITLE}}</a>
           <span class="art-date">{{DATE}}</span>
         </div>
-        <div class="art-stats">{{Views / likes.}}</div>
+        <div class="art-stats">{{Views / likes / impact metric.}}</div>
       </div>
     </div>
 

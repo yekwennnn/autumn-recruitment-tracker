@@ -1,19 +1,45 @@
-"""Shared constants and helpers for kami build and stabilize scripts."""
+"""Shared constants and helpers for kami build scripts."""
 from __future__ import annotations
 
+import functools
+import json
 import os
 import sys
 from pathlib import Path
+from typing import Any, NamedTuple
+
+
+class TemplateSpec(NamedTuple):
+    """Per-template configuration.
+
+    build_max_pages: hard ceiling enforced by `build.py --verify`. 0 = no limit.
+    """
+    source: str
+    build_max_pages: int
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES = ROOT / "assets" / "templates"
 DIAGRAMS = ROOT / "assets" / "diagrams"
 EXAMPLES = ROOT / "assets" / "examples"
 TOKENS_FILE = ROOT / "references" / "tokens.json"
+CHECKS_THRESHOLDS_FILE = ROOT / "references" / "checks_thresholds.json"
+SCHEMAS_DIR = ROOT / "references" / "schemas"
 
-# Canonical parchment background color, kept here so build/stabilize/density
+PUBLIC_REPO = "tw93/kami"
+CLAUDE_CODE_MIN_VERSION = "2.1.142"
+CLAUDE_CODE_INSTALL_COMMANDS = (
+    f"/plugin marketplace add {PUBLIC_REPO}",
+    "/plugin install kami@kami",
+)
+CODEX_PLUGIN_INSTALL_COMMANDS = (
+    f"codex plugin marketplace add {PUBLIC_REPO}",
+    "codex plugin add kami@kami",
+)
+GENERIC_AGENT_INSTALL_COMMAND = f"npx skills add {PUBLIC_REPO}/plugins/kami -a universal -g -y"
+CLAUDE_DESKTOP_PACKAGE_URL = "https://github.com/tw93/kami/releases/latest/download/kami.zip"
+
+# Canonical parchment background color, kept here so build/density
 # checks share one source of truth instead of redefining the RGB triple.
-PARCHMENT_HEX = "#f5f4ed"
 PARCHMENT_RGB = (0xF5, 0xF4, 0xED)
 
 _HOMEBREW_PREFIXES = (Path("/opt/homebrew"), Path("/usr/local"))
@@ -75,53 +101,203 @@ COOL_GRAY_BLOCKLIST = {
 # ---------------------------------------------------------------------------
 # Template registry
 #
-# Single source of truth for HTML targets across build.py and stabilize.py.
-#
-# Each entry is (source_filename, build_max_pages, stabilize_max_pages):
-#   - build_max_pages: hard ceiling enforced by `build.py --verify`. 0 = no
-#     limit.
-#   - stabilize_max_pages: target pages for the overflow solver in
-#     `stabilize.py`. 0 = solver disabled. The two values can differ because
-#     stabilize aims to keep doc-style targets within an editorial range while
-#     build only catches gross overflow.
+# Single source of truth for HTML targets used by build.py.
+# See TemplateSpec for field meanings.
 # ---------------------------------------------------------------------------
-HTML_TEMPLATES: dict[str, tuple[str, int, int]] = {
+HTML_TEMPLATES: dict[str, TemplateSpec] = {
     # Core six
-    "one-pager":    ("one-pager.html",    1, 1),
-    "letter":       ("letter.html",       1, 1),
-    "long-doc":     ("long-doc.html",     0, 9),
-    "portfolio":    ("portfolio.html",    0, 8),
-    "resume":       ("resume.html",       2, 2),
-    "one-pager-en": ("one-pager-en.html", 1, 1),
-    "letter-en":    ("letter-en.html",    1, 1),
-    "long-doc-en":  ("long-doc-en.html",  0, 9),
-    "portfolio-en": ("portfolio-en.html", 0, 8),
-    "resume-en":    ("resume-en.html",    2, 2),
+    "one-pager":    TemplateSpec("one-pager.html",    1),
+    "letter":       TemplateSpec("letter.html",       1),
+    "long-doc":     TemplateSpec("long-doc.html",     0),
+    "portfolio":    TemplateSpec("portfolio.html",    0),
+    "resume":       TemplateSpec("resume.html",       2),
+    "one-pager-en": TemplateSpec("one-pager-en.html", 1),
+    "letter-en":    TemplateSpec("letter-en.html",    1),
+    "long-doc-en":  TemplateSpec("long-doc-en.html",  0),
+    "portfolio-en": TemplateSpec("portfolio-en.html", 0),
+    "resume-en":    TemplateSpec("resume-en.html",    2),
+    # Korean
+    "one-pager-ko":     TemplateSpec("one-pager-ko.html",     1),
+    "letter-ko":        TemplateSpec("letter-ko.html",        1),
+    "long-doc-ko":      TemplateSpec("long-doc-ko.html",      0),
+    "portfolio-ko":     TemplateSpec("portfolio-ko.html",     0),
+    "resume-ko":        TemplateSpec("resume-ko.html",        2),
+    "equity-report-ko": TemplateSpec("equity-report-ko.html", 3),
+    "changelog-ko":     TemplateSpec("changelog-ko.html",     2),
+    "slides-weasy-ko":  TemplateSpec("slides-weasy-ko.html",  0),
     # Equity report
-    "equity-report":    ("equity-report.html",    3, 0),
-    "equity-report-en": ("equity-report-en.html", 3, 0),
+    "equity-report":    TemplateSpec("equity-report.html",    3),
+    "equity-report-en": TemplateSpec("equity-report-en.html", 3),
     # Changelog
-    "changelog":    ("changelog.html",    2, 0),
-    "changelog-en": ("changelog-en.html", 2, 0),
+    "changelog":    TemplateSpec("changelog.html",    2),
+    "changelog-en": TemplateSpec("changelog-en.html", 2),
     # Slides (WeasyPrint default)
-    "slides-weasy":    ("slides-weasy.html",    0, 0),
-    "slides-weasy-en": ("slides-weasy-en.html", 0, 0),
+    "slides-weasy":    TemplateSpec("slides-weasy.html",    0),
+    "slides-weasy-en": TemplateSpec("slides-weasy-en.html", 0),
 }
+
+SCREEN_TEMPLATES: dict[str, str] = {
+    "landing-page":    "landing-page.html",
+    "landing-page-en": "landing-page-en.html",
+    "landing-page-ko": "landing-page-ko.html",
+}
+
+# Editable PPTX fallback decks, generated by python-pptx scripts.
+PPTX_TEMPLATES: dict[str, str] = {
+    "slides":    "slides.py",
+    "slides-en": "slides-en.py",
+}
+
+# Diagram HTMLs live in assets/diagrams and have no page-count contract.
+# Registered here (not in build.py) so all template registries share one home.
+# The Mermaid-sourced ones are produced via scripts/mermaid_normalize.py.
+DIAGRAM_TEMPLATES: dict[str, str] = {
+    "diagram-architecture":       "architecture.html",
+    "diagram-architecture-board": "architecture-board.html",
+    "diagram-flowchart":     "flowchart.html",
+    "diagram-quadrant":      "quadrant.html",
+    "diagram-bar-chart":     "bar-chart.html",
+    "diagram-line-chart":    "line-chart.html",
+    "diagram-donut-chart":   "donut-chart.html",
+    "diagram-state-machine": "state-machine.html",
+    "diagram-timeline":      "timeline.html",
+    "diagram-swimlane":      "swimlane.html",
+    "diagram-tree":          "tree.html",
+    "diagram-layer-stack":   "layer-stack.html",
+    "diagram-venn":          "venn.html",
+    "diagram-candlestick":   "candlestick.html",
+    "diagram-waterfall":     "waterfall.html",
+    # Mermaid-sourced (beautiful-mermaid + scripts/mermaid_normalize.py)
+    "diagram-sequence":      "sequence.html",
+    "diagram-class":         "class.html",
+    "diagram-er":            "er.html",
+}
+
+
+PUBLIC_DOCUMENT_TEMPLATE_KINDS = {
+    "one-pager",
+    "letter",
+    "long-doc",
+    "portfolio",
+    "resume",
+    "slides",
+    "equity-report",
+    "changelog",
+}
+
+
+def _public_template_kind(name: str) -> str:
+    for suffix in ("-en", "-ko"):
+        if name.endswith(suffix):
+            name = name[: -len(suffix)]
+            break
+    if name.startswith("slides-weasy"):
+        return "slides"
+    return name
+
+
+def public_document_template_kinds() -> set[str]:
+    """Return public document-template kinds represented by HTML_TEMPLATES."""
+    return {
+        _public_template_kind(name)
+        for name in HTML_TEMPLATES
+        if _public_template_kind(name) in PUBLIC_DOCUMENT_TEMPLATE_KINDS
+    }
+
+
+def public_document_template_count() -> int:
+    return len(public_document_template_kinds())
+
+
+def rel_to_root(path: Path) -> Path:
+    """Return `path` relative to ROOT when possible, else the path unchanged."""
+    return path.relative_to(ROOT) if path.is_relative_to(ROOT) else path
+
+
+def default_example_pdfs() -> list[str]:
+    """Return every rendered example PDF, the default scan set for PDF checks."""
+    return [str(p) for p in sorted(EXAMPLES.glob("*.pdf"))]
+
+
+def iter_template_files(
+    *,
+    include_py: bool = False,
+    include_diagrams: bool = False,
+    include_marp_css: bool = False,
+) -> list[Path]:
+    """Collect template-family files for scanning.
+
+    One shared walker so lint, token-sync, and future checks cannot silently
+    diverge in coverage (a divergence is how the Marp CSS family once slipped
+    out of the lint scan while staying in the token scan).
+    """
+    targets: list[Path] = list(TEMPLATES.glob("*.html"))
+    if include_py:
+        targets.extend(TEMPLATES.glob("*.py"))
+    if include_diagrams and DIAGRAMS.exists():
+        targets.extend(DIAGRAMS.glob("*.html"))
+    if include_marp_css:
+        marp_dir = TEMPLATES / "marp"
+        if marp_dir.exists():
+            targets.extend(marp_dir.glob("*.css"))
+    return sorted(targets)
+
+
+@functools.lru_cache(maxsize=1)
+def kami_version() -> str:
+    """Return the canonical Kami version from the tracked VERSION file."""
+    return (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+
+
+@functools.lru_cache(maxsize=1)
+def load_tokens() -> dict[str, str]:
+    return json.loads(TOKENS_FILE.read_text(encoding="utf-8"))
+
+
+def token_value(name: str) -> str:
+    key = name if name.startswith("--") else f"--{name}"
+    return load_tokens()[key]
 
 
 def build_targets() -> dict[str, tuple[str, int]]:
     """Return target -> (source, max_pages) mapping for build.py."""
-    return {name: (src, build_max) for name, (src, build_max, _) in HTML_TEMPLATES.items()}
+    return {name: (spec.source, spec.build_max_pages) for name, spec in HTML_TEMPLATES.items()}
 
 
-def stabilize_targets() -> dict[str, tuple[str, int]]:
-    """Return target -> (source, max_pages) mapping for stabilize.py.
+def screen_targets() -> dict[str, str]:
+    """Return target -> source mapping for browser-only HTML templates."""
+    return dict(SCREEN_TEMPLATES)
 
-    Only includes templates with a non-zero stabilize ceiling (the ones the
-    overflow solver should constrain).
+
+def pptx_targets() -> dict[str, str]:
+    """Return target -> source mapping for python-pptx slide scripts."""
+    return dict(PPTX_TEMPLATES)
+
+
+def diagram_targets() -> dict[str, str]:
+    """Return target -> source mapping for assets/diagrams HTML templates."""
+    return dict(DIAGRAM_TEMPLATES)
+
+
+@functools.lru_cache(maxsize=1)
+def load_checks_thresholds() -> dict[str, Any]:
+    """Return rhythm / density / orphan thresholds.
+
+    Falls back to baked-in defaults if the JSON is missing so build.py works
+    on a half-installed checkout.
     """
+    if CHECKS_THRESHOLDS_FILE.exists():
+        return json.loads(CHECKS_THRESHOLDS_FILE.read_text(encoding="utf-8"))
     return {
-        name: (src, stab_max)
-        for name, (src, _build_max, stab_max) in HTML_TEMPLATES.items()
-        if stab_max > 0
+        "rhythm": {"max_content_run": 5, "divider_min_deck_size": 12},
+        "density": {"warn_pct": 0.25, "sparse_pct": 0.50, "dpi": 36},
+        "orphan": {"max_words": 2, "max_chars": 15},
+        "visual": {"dpi": 110},
     }
+
+
+def content_schema_types() -> list[str]:
+    """Return doc types that have a content schema in references/schemas."""
+    if not SCHEMAS_DIR.exists():
+        return []
+    return sorted(p.stem for p in SCHEMAS_DIR.glob("*.json"))

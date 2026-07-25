@@ -36,7 +36,12 @@ python3 $SKILL_DIR/scripts/insights.py add-fact --insights $SKILL_DIR/state/matc
 
 ## W4 改写
 
-执行 resume-jd-fit 的 **Step 4**（复用现有简历结构原地改内容）。基底没有 HTML（例如初始导入的是 PDF）→ 按 `vendor/kami/assets/templates/resume.html` 起版，动笔前先读 `vendor/kami/CHEATSHEET.md` + `vendor/kami/references/resume-writing.md`；**声明跳过** kami SKILL.md 的 Step 0（品牌档案）与 diagrams 路由（相关文件未内嵌）。
+执行 resume-jd-fit 的 **Step 4**（复用现有简历结构原地改内容）。基底没有 HTML（例如初始导入的是 PDF）→ 按 `vendor/kami/assets/templates/resume.html` 起版（英文简历用 `resume-en.html`），动笔前先读 `vendor/kami/CHEATSHEET.md` + `vendor/kami/references/resume-writing.md`。
+
+> `vendor/kami/SKILL.md` 是上游 V1.10.0 原文，本仓库只内嵌了简历所需子集（详见 `vendor/README.md`）。走到下面这些分支时**声明跳过**，不要去找文件：
+> - **Step 0 品牌档案**（读 `~/.config/kami/brand.md`）——本流程不用品牌档案。
+> - **diagrams / mermaid 路由**——`assets/diagrams/` 未内嵌，简历不出图表。
+> - **简历以外的文档类型**（one-pager / portfolio / slides / letter / long-doc / landing-page / changelog / equity-report）与**韩文模板**——对应 `assets/templates/` 未内嵌。
 
 > **STAR + 实事求是（每条 bullet 逐条过，不许跳）**
 > - 每条经历/项目按 STAR 组织：Situation+Task 压成一句背景（什么场景要解决什么问题）；Action 突出**本人**动作并与 JD 关键词自然对齐；Result 单独写真实结果。与 kami `resume-writing.md` 的 Role/Action/Result 标准兼容（Role≈S/T），冲突时以 STAR 为准。

@@ -5,9 +5,15 @@ state/tmp/
 resumes/*
 !resumes/.gitkeep
 
-# vendored kami 的商业字体只允许运行时下载，不允许提交
+# vendored kami 的商业/大体积字体只允许运行时由 ensure-fonts.sh 下载，不允许提交：
+#   *.ttf → 仓耳今楷（商业授权，明令禁止随包分发）
+#   *.otf → 思源宋体韩文（体积大，简历中文流程用不到）
+# JetBrainsMono.woff2 是 OFL 授权、上游随包分发的，resume-en 模板直接引用，必须入库。
 vendor/kami/assets/fonts/*.ttf
-vendor/kami/assets/fonts/*.woff2
+vendor/kami/assets/fonts/*.otf
+
+# kami 的构建产物（build.py 会把示例 PDF 写到这里），不是源文件
+vendor/kami/assets/examples/
 
 __pycache__/
 *.pyc

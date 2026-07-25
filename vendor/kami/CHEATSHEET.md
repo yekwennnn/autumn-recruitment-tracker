@@ -17,14 +17,7 @@ One-page quick reference. Scan before filling a template or tweaking a detail. F
 
 ## Sources and Materials
 
-
-| Trigger                                                   | Do first                                                            |
-| --------------------------------------------------------- | ------------------------------------------------------------------- |
-| Latest product / version / launch / funding / market data | Check reliable sources first                                        |
-| Company / product / project branded doc                   | Confirm logo, product image, or UI screenshot                       |
-| Key number or result                                      | Record the source; if unverifiable, write magnitude or mark missing |
-| Missing material                                          | Mark the gap or ask the user; do not use unrelated imagery          |
-
+Full pass in SKILL.md Step 2.1. The one contract worth repeating: a number you cannot verify ships as a magnitude or a marked gap, never as fake precision.
 
 ## Color
 
@@ -36,7 +29,7 @@ One-page quick reference. Scan before filling a template or tweaking a detail. F
 | Warm Sand    | `#e8e6dc`     | Button / interactive surface                        |
 | Dark Surface | `#30302e`     | Dark container                                      |
 | Deep Dark    | `#141413`     | Dark page background                                |
-| **Brand**    | `**#1B365D`** | **Accent · CTA · title left bar (≤ 5% of surface)** |
+| **Brand**    | **`#1B365D`** | **Accent · CTA · title left bar (≤ 5% of surface)** |
 | Ink Light    | `#2D5A8A`     | Links on dark surfaces                              |
 | Near Black   | `#141413`     | Primary text                                        |
 | Dark Warm    | `#3d3d3a`     | Secondary text · table headers · links              |
@@ -53,7 +46,7 @@ One-page quick reference. Scan before filling a template or tweaking a detail. F
 | -------- | --------------------------- |
 | 0.08     | `#EEF2F7`                   |
 | 0.14     | `#E4ECF5`                   |
-| **0.18** | `**#E4ECF5`** ← default tag |
+| **0.18** | **`#E4ECF5`** ← default tag |
 | 0.22     | `#D0DCE9`                   |
 | 0.30     | `#D6E1EE`                   |
 
@@ -141,6 +134,7 @@ Any font-family that may render Chinese or Japanese must include a CJK fallback,
 | Portfolio     | 12 · 15 · 12 · 15 mm |
 | Equity Report | 16 · 18 · 18 · 18 mm |
 | Changelog     | 20 · 22 · 22 · 22 mm |
+| Landing Page  | N/A (screen-first, max-width: 1120px, padding: 88px 64px) |
 
 
 ## Radius scale
@@ -191,6 +185,8 @@ Any font-family that may render Chinese or Japanese must include a CJK fallback,
   padding-left: 8pt;
 }
 ```
+
+Resume exception: `resume*.html` uses a quiet bottom rule instead of the brand left bar. Keep project rows borderless so section titles do not create double rules or lonely page-top lines.
 
 ### Table (kami-table)
 
@@ -244,12 +240,13 @@ Combine freely: `<table class="kami-table financial striped">`.
 
 ## Diagram components
 
-Fourteen built-in diagram types. Extract the `<svg>` block and embed in a `<figure>` in long-doc / portfolio:
+Eighteen built-in diagram types (incl. Mermaid-sourced sequence / class / ER; see `references/mermaid.md`). Extract the `<svg>` block and embed in a `<figure>` in long-doc / portfolio:
 
 
 | Type          | File                                 | Use                                             |
 | ------------- | ------------------------------------ | ----------------------------------------------- |
 | Architecture  | `assets/diagrams/architecture.html`  | System components and connections               |
+| Architecture Board | `assets/diagrams/architecture-board.html` | Report-scale five-layer system board (standalone page) |
 | Flowchart     | `assets/diagrams/flowchart.html`     | Decision branches and flows                     |
 | Quadrant      | `assets/diagrams/quadrant.html`      | 2×2 positioning                                 |
 | Bar Chart     | `assets/diagrams/bar-chart.html`     | Category comparison (up to 8 groups × 3 series) |
@@ -267,6 +264,8 @@ Fourteen built-in diagram types. Extract the `<svg>` block and embed in a `<figu
 
 Usage: extract the `<svg>` block from the HTML file and paste into the template's `<figure>` container.
 
+**Repo-maintained diagram** (README / docs-site figure living in the user's repository): keep the trio consistent, `index.html` source + same-name PNG re-exported after every change + `prompt.md` (must preserve / suggested additions / visual direction / sister boundaries). Evidence pass before drawing; maturity encoding for shipped / in-build / future. See `references/diagrams.md` «Maintained diagram assets».
+
 **Data chart colors**: primary series `#1B365D` · secondary `#504e49` → `#6b6a64` → `#b8b7b0` → `#d4d3cd` → `#EEF2F7`.
 
 **Editing data**: only modify elements between `<!-- DATA START -->` / `<!-- DATA END -->`, leave CSS untouched. All coordinates must be divisible by 4.
@@ -283,15 +282,13 @@ Alternate light/dark rhythm: add `.sd-alt` to any section container.
 
 ## Verification checks
 
-`python3 scripts/build.py --verify [target]` checks source templates and slides in sequence:
-
-1. Source file exists
-2. WeasyPrint render to PDF for HTML / diagram targets
-3. Page count check for strict targets
-4. Font embedding check
-5. PPTX generation for `slides` / `slides-en`
+`python3 scripts/build.py --verify [target]` covers render, page count, font embedding, and PPTX generation for source templates and slides.
 
 Source templates intentionally keep `{{...}}` fields. Run `python3 scripts/build.py --check-placeholders path/to/filled.html` on completed documents. Run `python3 scripts/build.py --check-density` to warn on pages with >25% trailing whitespace (skips cover).
+
+For new documents built from raw material, validate the content IR before layout and re-check coverage after filling: `python3 scripts/build.py --check-content content.json [filled.html]` (schemas in `references/schemas/`). Before shipping a filled PDF, run `python3 scripts/build.py --check-visual path/to/filled.pdf` and view every exported page image against the printed checklist.
+
+Marp variant deck (opt-in): `assets/templates/marp/`. Render with local `marp-cli`. See design.md §8 + production.md Part 2.5.
 
 ## Content quality (one rule per type)
 
@@ -333,7 +330,15 @@ Page 1 carries the projects section, which is the densest content. Page 2 carrie
 </body>
 ```
 
+Filled resume PDFs should be exactly 2 pages with both pages visually used. Check the rendered result:
+
+```bash
+python3 scripts/build.py --check-resume-balance path/to/resume.pdf
+```
+
 Page 2 font sizes stay at template defaults. The density variant only tightens page 1 elements. If page 2 has unusually long content, reduce `.os-intro`, `.conv-body`, or `.skill-body` individually, never globally.
+
+Resume visual rule: header and section titles carry the only structural rules. Top metrics stack value over label so labels stay single-line; project rows separate by padding, not borders.
 
 ## Quick decisions
 

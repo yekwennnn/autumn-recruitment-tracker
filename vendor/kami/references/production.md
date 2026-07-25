@@ -1,6 +1,8 @@
 # Production (Build · Verify · Troubleshoot)
 
-The engineering runbook for kami: from HTML / Python templates to PDF / PPTX deliverables. Four parts: **HTML -> PDF** · **Python -> PPTX** · **Verify & Debug** · **16 known pitfalls**.
+The engineering runbook for kami: from HTML / Python / Markdown sources to PDF,
+PPTX, browser-deck, and DOCX deliverables. It covers each supported render path,
+verification and debugging, and the known pitfalls gathered from production use.
 
 ---
 
@@ -61,11 +63,18 @@ font-family: "TsangerJinKai02", "Source Han Serif SC",
 font-family: "YuMincho", "Yu Mincho", "Hiragino Mincho ProN",
              "Noto Serif CJK JP", "Source Han Serif JP",
              "TsangerJinKai02", Georgia, serif;
+
+/* Korean */
+font-family: "Source Han Serif K", "Source Han Serif KR",
+             "Noto Serif KR", "Apple SD Gothic Neo", AppleMyungjo,
+             Charter, Georgia, serif;
 ```
 
-**Font fallback affects page count**. Any font swap requires re-running the page-count check. If it overflows: lower `font-size` first, then tighten margins, then cut content.
+**Font fallback affects page count**. Any font swap requires re-running the page-count check. If output overflows, first confirm the intended font actually loaded. If it did, edit content using pitfall "Hard-limit overflow"; spacing comes later and font size is the last resort.
 
-**Claude Desktop skill ZIPs do not bundle large Chinese font files**: `TsangerJinKai02-W04.ttf` and `TsangerJinKai02-W05.ttf` are close to 19MB each and can make Claude.ai / Desktop skill upload or execution time out. Release ZIPs must be generated with `scripts/package-skill.sh`, which excludes both TTF files. Templates still keep local-first and jsDelivr fallback `@font-face` paths.
+**Claude Desktop skill ZIPs do not bundle large CJK font files**: `TsangerJinKai02-W04.ttf`, `TsangerJinKai02-W05.ttf`, `SourceHanSerifKR-Regular.otf`, and `SourceHanSerifKR-Medium.otf` can make Claude.ai / Desktop skill upload or execution time out. The ZIP you upload must be the `scripts/package-skill.sh` output under the 6MB package ceiling, never a hand-zipped checkout. `package-skill.sh` excludes those large font files. Templates still keep local-first and jsDelivr fallback `@font-face` paths.
+
+When Chinese or Korean fonts are missing (the skill case), `scripts/ensure-fonts.sh` downloads them to the XDG user font dir (`${XDG_DATA_HOME:-~/.local/share}/fonts/kami`, override with `KAMI_FONT_DIR`), **not** into the skill's `assets/fonts`. fontconfig scans that dir by default on macOS and Linux, so WeasyPrint resolves `TsangerJinKai02` and `Source Han Serif K` from there while the installed skill stays small; online renders still use the jsDelivr `@font-face` URL.
 
 **Standalone HTML export** (sending a filled HTML file to someone else): this is not guaranteed to work outside the project tree. If the recipient cannot set up the font environment, use the PDF output instead.
 
@@ -90,7 +99,52 @@ Remove the `../fonts/` prefix that templates use when fonts are in the project t
 }
 ```
 
+### Print / white-paper variant (opt-in)
+
+Parchment is the default and keeps shipping. Override to white only when a single
+document is **headed for a home / office printer**: a full-page `#f5f4ed` tint
+bands unevenly and burns toner, where white paper prints clean. This is the one
+sanctioned exception to design.md invariant #1 ("never pure white"), and it is
+opt-in per document, never the default render.
+
+White is not a one-line background swap. Parchment also serves as the surface that
+`--ivory` cards, code blocks, and striped rows lift *off* of (they are "brighter
+than parchment"). Flip the page to white and those surfaces, only 1.5% lighter than
+white, vanish. So relocate the warmth instead of deleting it: sink parchment down
+into the lift surface. Three edits on the copied, filled template:
+
+```css
+@page      { background: #ffffff; }   /* was #f5f4ed */
+html, body { background: #ffffff; }   /* was var(--parchment) */
+:root      { --ivory: #f5f4ed; }      /* parchment becomes the card/code/table lift */
+```
+
+Everything else is unchanged: ink-blue accent, warm text grays, and `--border`
+hairlines all read fine on white. Leave the `--parchment` token itself alone (any
+`var(--parchment)` section fill then reads as an intentional warm band on white).
+A lifted surface that separated from parchment by fill *alone* (rare, most already
+carry a `0.5pt var(--border)` edge) wants that border added so it holds an edge on
+white.
+
+Notes:
+- Lint-safe by construction: `scripts/lint.py` off-palette and token-sync guards
+  scan only registered templates, not generated documents, so `#ffffff` in a
+  filled output never trips them.
+- Page-count and `--check-density` contracts are unaffected; still inspect that
+  cards, code, and tables read on white before shipping.
+- If white-paper output ever becomes a first-class, frequent ask, promote this from
+  a recipe to a `--page-bg` / `--surface` token pair in every template `:root`
+  (ships commented, like the `.brand-logo` slot). `@page { background: var(--page-bg) }`
+  is verified to resolve in WeasyPrint (68.1), so the token path is viable. Until
+  then, keep it a recipe: the project's contract is "no new mode unless a request
+  can't be met otherwise", and this recipe already meets the request.
+
 ### Headers & footers
+
+Long-doc running headers use `string(section-title)`. The default templates set
+that string on chapter `h1` elements, not on every `h2`, so a table of contents
+heading cannot pin the header to "Contents" / "目录". If a filled document uses a
+different element for chapter titles, add `.running-title` to that element.
 
 ```css
 @page {
@@ -119,6 +173,7 @@ Remove the `../fonts/` prefix that templates use when fonts are in the project t
 | `@font-face` | gradients (slow, use sparingly) | CSS animations / transitions |
 | `break-before` / `break-inside: avoid` | | |
 | CSS variables `var(--name)` | | |
+| `target-counter(attr(href), page)` for rendered TOC page numbers | | |
 | `::before` / `::after` | | |
 
 ### PDF metadata
@@ -213,6 +268,10 @@ English stack on PowerPoint:
 8. **Quote**: parchment, minimal, centered serif quote + `- Source`
 9. **Closing**: parchment, centered "Thank you / Q&A / Contact"
 
+### Template-bound PPTX inventory
+
+Use this only when the user provides a real PPTX or brand template and explicitly asks to preserve its layout system. First inspect the template visually, identify the few reusable layout families, and map each planned section to one existing slide family. Then edit content while preserving the template's shape structure. Do not run this inventory step for Kami's default WeasyPrint or Marp paths; those already have fixed template contracts.
+
 ### Script skeleton
 
 Full working example in `assets/templates/slides-en.py`. Key bits:
@@ -246,10 +305,18 @@ def blank_slide():
 
 1. **One idea per slide** - if it runs over three lines, split it
 2. **No default PowerPoint template** - it's cool-blue-gray, clashes with parchment
-3. **Animations**: don't. Parchment is a print aesthetic, not a SaaS demo. At most `fade`
+3. **Animations**: none by default. When motion carries meaning, use `fade` only
 4. **Export to PDF** for sharing - cross-machine consistency is better than .pptx
  - macOS: Keynote -> Export to PDF
  - Linux: `libreoffice --headless --convert-to pdf output.pptx`
+
+### PPTX delivery check
+
+A generated PPTX is complete only after it has been opened in presentation software
+or exported to PDF and inspected. Pass when the intended Kami font family remains
+present, with no silent substitution to Calibri, Aptos, or another presentation
+default; no text overflows or crops; all content stays inside the safe zone; and page
+numbers remain intact. A successful `python-pptx` save is not delivery evidence.
 
 ### Slide scale rules (from production decks)
 
@@ -269,6 +336,76 @@ One rule covers most adjustments: **macro spacing x1.6, micro details x0.5** (le
 | Images | Inline with text | `width:100%; object-fit:contain; max-height:780px` | Avoid fixed height that clips different ratios |
 | Footer | Per-template | Single component, CSS-injected text | Prevents drift across 50+ slides |
 | Punctuation | Standard | Use ` - ` for short joins, `<ol>` for parallel items | CJK commas break visual rhythm at slide scale |
+
+---
+
+## Part 2.5 · Markdown -> Marp (variant deck path)
+
+Marp is the third rendering path, used only when the user explicitly asks for Marp / markdown slides / a deck that lives in a `.md` file. The repo does **not** declare `marp-cli` as a dependency; install it on the user's machine.
+
+### Install
+
+Use the `npx @marp-team/marp-cli@latest ...` form below for zero-install. For repeat use, install via `npm i -g @marp-team/marp-cli` or `brew install marp-cli` (see [marp-cli docs](https://github.com/marp-team/marp-cli)). Kami's build pipeline (`build.py` / `package-skill.sh`) does not call `marp`.
+
+### Files
+
+| Asset | Path |
+|---|---|
+| CN theme | `assets/templates/marp/slides-marp.css` (theme name: `kami`) |
+| EN theme | `assets/templates/marp/slides-marp-en.css` (theme name: `kami-en`) |
+| CN sample deck | `assets/templates/marp/slides-marp.md` |
+| EN sample deck | `assets/templates/marp/slides-marp-en.md` |
+
+### Render commands
+
+Run from the repo root so input paths resolve. **Input file must come before `--theme-set`**; `--theme-set` is a yargs array option and will swallow any positional arg that follows it.
+
+**Font path caveat**: Marp inlines the theme CSS into the output HTML verbatim. The `@font-face` `url("../../fonts/...")` paths in the theme therefore resolve relative to the *output file location*, not the theme CSS location. When the output sits inside the repo (e.g. `-o assets/examples/kami.html`), the relative path matches and local Tsanger / Charter loads. When the output sits elsewhere (e.g. `-o /tmp/kami.html`), the relative path misses and the browser falls back to the jsDelivr CDN URL declared alongside each local one. This needs network. This differs from WeasyPrint, where CSS paths resolve relative to the input HTML.
+
+```bash
+# HTML preview (no Chromium needed; zero external download)
+npx @marp-team/marp-cli@latest \
+  assets/templates/marp/slides-marp.md \
+  --theme-set assets/templates/marp \
+  -o /tmp/kami-cn.html
+
+# PDF (needs Chromium; see "Browser strategy" below)
+npx @marp-team/marp-cli@latest \
+  assets/templates/marp/slides-marp.md \
+  --theme-set assets/templates/marp \
+  --pdf --allow-local-files \
+  -o /tmp/kami-cn.pdf
+
+# PPTX (Chromium-rendered; not a python-pptx editable deck)
+npx @marp-team/marp-cli@latest \
+  assets/templates/marp/slides-marp.md \
+  --theme-set assets/templates/marp \
+  --pptx --allow-local-files \
+  -o /tmp/kami-cn.pptx
+```
+
+`--theme-set` points at the directory; Marp picks up every `.css` in there. `--allow-local-files` is required for PDF / PPTX so the renderer may read the local font files referenced by `@font-face` URLs.
+
+### Browser strategy (only for PDF / PPTX)
+
+HTML output is pure Node and needs no browser. PDF / PPTX rendering goes through a headless browser. Three options, lightest first:
+
+| Strategy | Setup | Cost |
+|---|---|---|
+| **HTML only, view in browser** | Use the HTML command above; open in any browser; export to PDF from the browser's print dialog if needed | 0 MB |
+| **Reuse a local Chromium-family browser** | Set `PUPPETEER_EXECUTABLE_PATH` to the absolute path of an installed Chrome, Edge, Brave, Arc, or Chromium binary. Marp also honours `--browser chrome` / `edge` / `firefox` with `--browser-path`. | 0 MB (assumes the browser is already installed) |
+| **Let Marp download its own Chromium** | First run of `--pdf` / `--pptx` triggers Puppeteer to fetch a pinned Chromium build (~150 MB to `~/.cache/puppeteer/`) | ~150 MB, one-time |
+
+For light verification of the theme and sample deck, prefer the HTML path.
+
+### Marp gotchas
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Two page numbers per slide | Deck pinned a `.page-num` element and also set `paginate: true` | Pick one; the theme injects pagination via `section::after` |
+| `position: absolute` does not pin `.co` | A child `<div>` overrode `position: relative` on the section | Marp themes already set `section { position: relative }`; do not override it per slide |
+| PDF / PPTX export hangs on first run | Marp is downloading Chromium | Network-restricted environments need `PUPPETEER_EXECUTABLE_PATH` to a pre-installed Chrome |
+| Markdown inside `<div class="c2">` renders as a literal HTML block | Missing blank line between the `<div>` and the Markdown body | Always leave a blank line above and below Markdown inside an HTML wrapper |
 
 ---
 
@@ -302,24 +439,29 @@ If the output shows `DejaVuSerif` / `Bitstream Vera` - your specified font didn'
 Project script `scripts/build.py` is the productized version of the three-step loop:
 
 ```bash
-python3 scripts/build.py               # all 12 examples
+python3 scripts/build.py               # all registered examples
 python3 scripts/build.py resume-en     # one target + page count + fonts
 python3 scripts/build.py --check       # scan for CSS rule violations
 python3 scripts/build.py --check-density       # warn on pages with >25% trailing whitespace
+python3 scripts/build.py --check-markdown output.pdf  # scan for raw Markdown markers
+python3 scripts/build.py --check-content content.json filled.html  # content IR schema + coverage
+python3 scripts/build.py --check-visual output.pdf    # page PNGs + perceptual review checklist
 ```
 
-### Layout stabilizer (HTML templates)
+For long-doc templates, keep TOC entries as links to stable chapter ids. The page
+number is generated with CSS `target-counter()` at render time, so content edits
+do not require hand-updating page numbers.
 
-When a constrained template is near page overflow (one-pager, letter, resume, and English variants), run the stabilizer first, then verify:
+### Page overflow (constrained templates)
+
+When a constrained template exceeds its page ceiling, treat content as the primary
+repair surface; use Part 4 pitfall "Hard-limit overflow" for the proven priority
+order. The result must pass both checks:
 
 ```bash
-python3 scripts/stabilize.py all --out-dir dist/stabilized --report
-python3 scripts/stabilize.py one-pager letter resume one-pager-en letter-en resume-en --strict --report
 python3 scripts/build.py --check
 python3 scripts/build.py --verify
 ```
-
-`scripts/stabilize.py` is intentionally independent from `scripts/build.py`. Thresholds and solver behavior are controlled by `references/stabilizer_profiles.json`.
 
 ### Hi-res visual inspection
 
@@ -343,9 +485,26 @@ A successful render is not enough. Scan these before delivery:
 
 If any row fails, fix it before delivery.
 
+### Static product site pre-ship review
+
+Run this when the deliverable is a landing page, product site, or hosted showcase rather than a PDF:
+
+| Dimension | Pass standard |
+|---|---|
+| Runtime preview | Serve locally and inspect desktop plus 375px mobile. The first viewport shows the product category, real asset, CTA, and a hint of the next section. |
+| Generated output | If pages come from `template + i18n + content`, run the generator's check mode. It must fail on missing keys and committed output drift. |
+| Public metadata | Canonical, hreflang, `og:locale`, social image, JSON-LD, robots, sitemap, `llms.txt`, and `llms-full.txt` all reflect the shipped locale set. |
+| Copy sync | Product positioning, price, version, install path, support link, FAQ, `llms.txt`, and `llms-full.txt` carry the same factual claims in every locale. |
+| Asset reality | Screenshots are real product surfaces and every image path resolves from the repo or a public URL. No `/Users`, `file://`, or sibling-repo relative paths. |
+| Screenshot fit | Hero, gallery, feature, and social-image slots use stable ratios. UI text, numbers, prompts, and controls are not cropped away for aesthetics. |
+| Motion fallback | Gallery rotation, entrance animation, or custom transitions respect `prefers-reduced-motion`; a still page remains readable with motion disabled. |
+| Link surface | Primary CTA, download, releases, docs, help, social links, and internal locale links resolve. Any named release or download artifact exists. |
+
+If the site has only one or two locales, hand-maintained static pages are acceptable. For three or more locales, prefer a generator with a drift check over repeated manual edits.
+
 ---
 
-## Part 4 · 22 known pitfalls
+## Part 4 · Known pitfalls
 
 Every entry below came from a real failure. Check here first when something looks wrong.
 
@@ -423,6 +582,8 @@ For resume, one-pager, and other length-capped docs.
 
 Apply dense mode only when the 4-project layout already overflows. Do not use it as a default; the visual rhythm is noticeably tighter.
 
+Resume templates use section-title bottom rules and borderless project rows. Do not reintroduce project `border-top` as a density aid; it creates double rules below headings and orphan rules at page breaks.
+
 ### 4. (P1) Font fallback causes page count inconsistency
 
 **Symptom**: 2 pages locally, 4 pages in CI / on server.
@@ -432,7 +593,10 @@ Apply dense mode only when the 4-project layout already overflows. Do not use it
 **Fix**:
 
 ```bash
-# Preferred: multi-source download script (retries, size validation)
+# Preferred: multi-source download script (retries, size validation).
+# Lands fonts in ${XDG_DATA_HOME:-~/.local/share}/fonts/kami (fontconfig-scanned,
+# outside the skill dir), then runs fc-cache. Inside a repo checkout it is a
+# no-op because the committed TTFs already satisfy the templates' relative path.
 bash scripts/ensure-fonts.sh
 
 # Or put .ttf alongside the HTML
@@ -472,26 +636,20 @@ mkdir -p ~/.fonts && cp *.ttf ~/.fonts/ && fc-cache -f
 
 ### 7. (P2) Thousands / percent / arrows - be consistent
 
-| Use | Avoid |
-|---|---|
-| `5,000+` | `5000+` |
-| `90%` | `90 %` (pre-space) |
-| `->` | `->` / `-&gt;` |
+**Symptom**: one document mixes thousands separators, spaced percent signs, or
+multiple arrow glyphs. `writing.md` "Number formatting" is the source of truth.
 
 Self-check:
 ```bash
-grep -oE '->|->|⟶|⇒' doc.html | sort | uniq -c
+grep -oE '→|⟶|⇒' doc.html | sort | uniq -c
 grep -oE '[0-9]{4,}' doc.html | sort -u
 ```
 
 ### 8. (P2) Too much / too little emphasis
 
-- Four or five ink-blue runs in one line -> visual fatigue, no focal point
-- Entire section with none -> flat, no scan handles
-
-**Rule**: ≤ 2 emphases per line, ≥ 1 per section, only **quantifiable numbers or distinctive phrases** get highlighted - never adjectives.
-
-Healthy ratio: one emphasis per 80-150 words.
+**Symptom**: four or five ink-blue runs in one line create visual fatigue, while a
+long prose section with none has no scan handle. `writing.md` "Emphasis rhythm" is
+the source of truth for density and eligible content.
 
 ### 9. (P0) `height: 100vh` doesn't work
 
@@ -559,17 +717,7 @@ Healthy ratio: one emphasis per 80-150 words.
 
 **Fix**: source images at 2x or 3x.
 
-### 14. (P3) Verification loop (catch-all)
-
-```bash
-python3 -c "from weasyprint import HTML; HTML('doc.html').write_pdf('out.pdf')"
-python3 -c "from pypdf import PdfReader; print(len(PdfReader('out.pdf').pages))"
-pdftoppm -png -r 300 out.pdf inspect    # when in doubt
-```
-
-**Not verified = not done.**
-
-### 15. (P0) SVG marker `orient="auto"` ignored
+### 14. (P0) SVG marker `orient="auto"` ignored
 
 **Symptom**: SVG arrows using `<marker orient="auto">` or `orient="auto-start-reverse"` all point right (the marker's default drawing direction), regardless of the path's tangent angle.
 
@@ -601,7 +749,7 @@ Chevron templates (tip at endpoint, 8px arm length):
 | up | `M (x-8) (y+8) L x y L (x+8) (y+8)` |
 | right | `M (x-8) (y-8) L x y L (x-8) (y+8)` |
 
-### 16. (P1) Slide letter-spacing must be halved
+### 15. (P1) Slide letter-spacing must be halved
 
 **Symptom**: Slide text looks "scattered" or over-spaced when print letter-spacing values (e.g. `letter-spacing: 8px`) are used directly.
 
@@ -617,7 +765,7 @@ Chevron templates (tip at endpoint, 8px arm length):
 .slide .eyebrow { letter-spacing: 3px; }   /* halved */
 ```
 
-### 17. (P1) Figure SVG `max-height` starves width
+### 16. (P1) Figure SVG `max-height` starves width
 
 **Symptom**: An inline `<svg>` inside `<figure>` sits at less than the page content width, leaving a visible parchment gap on the right while the surrounding title and table run full-width.
 
@@ -635,7 +783,7 @@ figure svg { width: 100%; height: auto; max-height: 70mm; }
 
 Quick check: if `viewBox` aspect ratio × current `max-height` < page content width, the chart is starved. Bump `max-height` until `aspect × max-height >= content width` or remove the cap.
 
-### 18. (P1) Multi-column metric labels need word-budget discipline
+### 17. (P1) Multi-column metric labels need word-budget discipline
 
 **Symptom**: One or more labels in a 3-4 column metric row wrap to two lines while siblings stay on one line, breaking the baseline rhythm and pushing the value/label out of alignment.
 
@@ -651,7 +799,7 @@ Quick check: if `viewBox` aspect ratio × current `max-height` < page content wi
 
 When the natural label is longer (e.g. "Falcon launches, lifetime"), trim to the data essential ("Falcon launches"); supporting context belongs in nearby body copy, not in a metric chip.
 
-### 19. (P2) Multi-column body density imbalance
+### 18. (P2) Multi-column body density imbalance
 
 **Symptom**: A row of N parallel body columns (timeline cards, conviction cards, feature blurbs) renders with one column wrapping to one extra line while the others wrap evenly. The rhythm reads broken even when each individual cell looks fine.
 
@@ -666,7 +814,7 @@ col 3:  88 chars (3 lines)   <- breaks rhythm
 col 3': 66 chars (2 lines)   <- fixed by trimming "general intelligence" -> "AGI"
 ```
 
-### 20. (P0) Demo / template HTML must reference assets inside the kami repo
+### 19. (P0) Demo / template HTML must reference assets inside the kami repo
 
 **Symptom**: Image slot renders as a missing-image placeholder in the PDF; rendered demo PNG looks empty where a screenshot should be.
 
@@ -684,13 +832,13 @@ col 3': 66 chars (2 lines)   <- fixed by trimming "general intelligence" -> "AGI
 
 Quick check before building any demo: `rg 'src="(\.\./|/Users/|file://)' assets/demos/` should return zero matches.
 
-### 21. (P1) Metric row baseline-align breaks when labels wrap
+### 20. (P1) Metric row baseline-align breaks when labels wrap
 
 **Symptom**: A horizontal metric row with `display: flex; align-items: baseline` looks fine when every label is one line, but ugly when one label wraps. The big number "10×" sits at the visual top of its column while the multi-line label flows downward; sibling columns with one-line labels look balanced but the wrapped column reads broken.
 
 **Root cause**: `align-items: baseline` aligns each metric to the **first line** of its label. When labels have different line counts, the visible heights differ but the numbers all sit at the same baseline (= top), making the row look uneven.
 
-**Fix**: Stack vertically (`flex-direction: column`). All numbers sit on the same top edge, all labels start at the same y below the numbers, and label wrap only extends each column's bottom — which is invisible on a slide / page.
+**Fix**: Stack vertically (`flex-direction: column`). All numbers sit on the same top edge, all labels start at the same y below the numbers, and label wrap only extends each column's bottom, which is invisible on a slide / page.
 
 ```css
 /* avoid: breaks visually when one label wraps */
@@ -702,7 +850,7 @@ Quick check before building any demo: `rg 'src="(\.\./|/Users/|file://)' assets/
 
 This is especially important on slides where metrics often sit on a baseline strip at the bottom of the page; even a single multi-line label among 3 columns breaks the rhythm.
 
-### 22. (P2) Slide bullets: prefer short numerals or `•` over en-dash
+### 21. (P2) Slide bullets: prefer short numerals or `•` over en-dash
 
 **Symptom**: A bulleted list on a slide with `–` (en-dash, U+2013) markers reads heavy and informal, especially at large slide font sizes (12-14pt body). The en-dash is wide and creates a visible gap between marker and text.
 
@@ -726,6 +874,30 @@ ul.pts li::before {
 ```
 
 Print docs (long-doc, equity-report) keep the editorial en-dash style; slides switch to numerals.
+
+### 22. (P1) Section body text is narrower than the page
+
+**Symptom**: manifesto, section-lede, or similar body copy renders as a narrow inset
+column while adjacent content fills the page.
+
+**Root cause**: a generic article-style `max-width` was applied to body text. Kami
+section copy should fill the `.page` container; `.type-sample` and
+`.footer .colophon` are the intentional exceptions.
+
+**Fix**: remove the body-copy `max-width` rather than widening it with another local
+override. Keep the two named exceptions constrained.
+
+### 23. (P3) Diagram fixes drift from public-site miniatures
+
+**Symptom**: a diagram template renders correctly, but the public showcase still
+shows the old geometry or styling.
+
+**Root cause**: each public locale page contains a separate inline mini SVG; it is
+not generated from `assets/diagrams/*.html`.
+
+**Done when**: every visual change to a diagram template is also present in the
+matching mini SVG in `index.html`, `index-zh.html`, `index-ja.html`, `index-ko.html`,
+and `index-tw.html`.
 
 ---
 

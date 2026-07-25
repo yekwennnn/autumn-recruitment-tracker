@@ -51,6 +51,19 @@ Branded documents should first make the subject recognizable, then use decoratio
 - If brand color is unknown, keep kami ink-blue rather than inventing a new color
 - **Third-party figures**: when redrawing a paper figure, patent illustration, or official architecture diagram for visual consistency, mark the redraw as `Schematic redrawn` /「示意重绘」in the caption. Do not style a redrawn version to look like the original screenshot. If the figure carries primary evidentiary value (patent, official spec), embed the original with attribution rather than redrawing it
 
+### 7. Term annotation half-life
+
+术语首次出现时注解。注解在 8-10 页或 10 张 slide 后过期。超出半衰期再次使用时，用更短的提示重标，不要假设读者还记得。Cap、卡片副标题、章节摘要这类快速阅读位置尤其严格。
+
+- 首次: "LTV (Lifetime Value, 用户在流失前贡献的总收入)"
+- 超过半衰期后重现: "LTV (用户终身价值)"
+- 半衰期内不要重标，读起来像在解释已知概念
+- 适用于 slides、long-doc、equity report 等超过 8 页的文档。Resume 和 one-pager 太短，不触发
+
+### 8. English term density in CJK text
+
+中日文正文里，单句未注解英文术语 ≤ 1 个。超过就拆句或加 inline 注解。注解优先用动作词 (warmup → 升起来, rollout → 跑一遍生成, credit assignment → 把功劳分到具体哪一步)，不用概念词 (预热, 轨迹生成, 信用分配)。动作词描述发生了什么，概念词只是换个外壳。
+
 ---
 
 ## Per-document strategies
@@ -75,12 +88,9 @@ Branded documents should first make the subject recognizable, then use decoratio
 
 ### Long Document
 
-**Structure**:
-1. **Cover** - big title + subtitle + author + date
-2. **Contents** (auto-generated or hand-written TOC)
-3. **Executive Summary** (≤ 1 page + 3-5 takeaways)
-4. **Body** - chapters that each stand alone as an essay
-5. **Appendix / references** (if applicable)
+**Content contract**: use the template's existing cover, contents, executive summary,
+body, and optional appendix slots. The executive summary fits on one page with 3-5
+takeaways; each body chapter stands alone as an essay.
 
 **Rules**:
 - Every chapter opens with a "claim paragraph" (2-3 sentences summarizing the argument)
@@ -91,26 +101,16 @@ Branded documents should first make the subject recognizable, then use decoratio
 
 ### Letter
 
-**Structure**:
-1. Letterhead (sender info, top right or centered)
-2. Date (right-aligned)
-3. Recipient salutation (left-aligned)
-4. Body (3-5 paragraphs)
-5. Sign-off ("Sincerely," / "Best regards,")
-6. Signature (serif 500)
-7. Enclosures (if any)
+**Content contract**: use the template's existing letterhead, date, salutation,
+body, sign-off, signature, and optional enclosure slots. Keep the body to 3-5
+paragraphs.
 
 **Rules**:
 - Minimal - no decorative elements
 - Body prefers serif (editorial feel)
 - Slightly larger type (11-12pt body) - this will be read, not scanned
 - Paragraph spacing ≥ 10pt
-
-**Common use cases**:
-- Resignation / notice
-- Recommendation letter
-- Formal collaboration proposal
-- Personal statement
+- Signature uses serif 500
 
 **Language notes**:
 - Chinese sign-offs can use "此致 / 敬礼", "顺颂商祺", or a context-appropriate formal closing
@@ -236,6 +236,8 @@ Structure is necessary but not sufficient. These bars define what separates comp
 
 **Core rule**: open every case study with the problem and its stakes, not with your role or the project name.
 
+**Density bar**: each project page reads as a complete case study. At target font size, a body page that renders under half-full is a draft defect, not a design choice. Merge upward into the previous project or downward into the next; do not pad with filler prose. See SKILL.md Step 4.1 for the items-per-page contract.
+
 | Avoid | Use |
 |---|---|
 | "I redesigned the dashboard" | "Enterprise users abandoned the analytics dashboard at 73% rate within the first session. I led the redesign that cut abandonment to 31%." |
@@ -253,6 +255,8 @@ Structure is necessary but not sufficient. These bars define what separates comp
 
 **Core rule**: every slide title should be a full declarative sentence (an assertion), not a topic label. The body provides one piece of evidence supporting the assertion.
 
+**Density bar**: each body slide carries one assertion + 3-5 supporting items (or 1 chart + 2-3 callouts). Slides with fewer than 3 items and no chart must merge into an adjacent slide. Pinned `.co` callouts at bottom are intentional; bare trailing whitespace on a slide is a draft defect. See SKILL.md Step 4.1.
+
 | Avoid | Use |
 |---|---|
 | Title: "Q3 Performance" | Title: "Q3 revenue grew 23% because enterprise deals closed 2x faster" |
@@ -262,20 +266,28 @@ Structure is necessary but not sufficient. These bars define what separates comp
 **Rules**:
 1. 20-40 words per slide maximum. If a slide has more than 40 words, split it or convert text to a visual
 2. 5 items per list maximum (working memory capacity)
-3. Three-act structure: Setup (slides 1-4, establish stakes) -> Evidence (slides 5-12, build the case) -> Resolution (slides 13-16, deliver the payoff)
-4. Reading just the slide titles in sequence should tell the full argument
-5. Include a "so what" moment every 3-4 slides to re-anchor the audience
-6. End with one clear ask, not a bullet list of "key points"
+3. Three-act arc: setup establishes stakes, evidence builds the case, and resolution delivers the payoff. Act lengths scale with deck size; reading the slide titles in sequence should tell the full argument
+4. Include a "so what" moment every 3-4 slides to re-anchor the audience
+5. End with one clear ask, not a bullet list of "key points"
 
 **Eyebrow vs title non-duplication**: the eyebrow is a stable, cross-slide section label ("Growth / Q3 Results"). The title is a page-unique declarative claim ("Revenue grew 23% because enterprise deals closed 2x faster"). They must never say the same thing in different words. If removing the eyebrow would make the title ambiguous, the title is too weak. If reading the title makes the eyebrow redundant, the eyebrow is a topic label masquerading as context.
 
-**Deck rhythm (>=12 slides)**: before writing any slide, sketch a layout-type sequence. Rules: every 4-6 slides must include a `chapter_slide` (ink-blue full-bleed divider); never run more than 5 consecutive `content_slides` without a divider; the deck must include at least one `quote_slide` or `metrics_slide` to vary density. Monotony is a structure failure, not a content one.
+**Deck rhythm (>=12 slides)**: the layout-type sequence includes a `chapter_slide`
+(ink-blue full-bleed divider) every 4-6 slides, no run exceeds 5 consecutive
+`content_slides`, and the deck includes at least one `quote_slide` or
+`metrics_slide` to vary density. Monotony is a structure failure, not a content one.
 
 **Term consistency self-check**: after drafting, list every domain term that appears 3 or more times (product names, feature names, roles, metrics). Confirm there is exactly one spelling and capitalization for each. Inconsistent casing ("LLM" vs "llm" vs "large language model") signals an unreviewed draft.
+
+**Caption quality bar**: every cap must answer "why does this slide matter": give a tradeoff, an applicability boundary, a next step, or the insight the diagram alone cannot say. Two failure modes both waste the cap's attention slot: restating the slide title in different words (anti-pattern #29), or restating the flow diagram in prose (anti-pattern #26). If removing the cap would make the slide weaker, it is doing its job; if removing it changes nothing, rewrite it.
+
+**Term annotation half-life**: decks 超过 10 张时，跨越 10-slide 窗口再出现的术语需重标。见 core principle #7。
 
 ### Equity Report
 
 **Core rule**: lead with the variant perception (what you see that the market doesn't) and tie every thesis driver to a measurable financial impact.
+
+**Density bar**: a body page with only a 2-row table and a sentence is too thin. Each page should carry one section + one table/chart + supporting prose. Combine sections rather than leaving a page half-empty. See SKILL.md Step 4.1.
 
 | Avoid | Use |
 |---|---|
@@ -297,6 +309,12 @@ Structure is necessary but not sufficient. These bars define what separates comp
 ### Long Document
 
 **Core rule**: each chapter's claim paragraph must survive the "so what?" test. If the reader asks "why should I care?", the first paragraph must have the answer.
+
+**Density bar**: each body page carries 1 chapter heading + 2-4 paragraphs + at most 1 figure. A chapter that fits in under 40% of a page must merge into the next chapter rather than claiming its own page. Trailing whitespace at the bottom of a body page is a draft defect. See SKILL.md Step 4.1.
+
+After converting from Markdown, remove or convert thematic breaks, bold markers,
+and inline-code backticks before delivery, then run `python3 scripts/build.py
+--check-markdown path/to/filled.pdf` on the rendered PDF.
 
 **Rules**:
 1. Evidence density: at least one data point per paragraph. A paragraph with zero numbers is an opinion paragraph and should be rare
@@ -323,11 +341,13 @@ Structure is necessary but not sufficient. These bars define what separates comp
 1. One point per middle paragraph, each with its own evidence
 2. Tone calibration per use case: resignation (grateful + clear), recommendation (specific + enthusiastic), proposal (value-first + concrete), personal statement (authentic + structured)
 3. Sign-off matches formality: "Sincerely" for formal, "Best regards" for professional-warm, "Warm regards" for personal
-4. Under no circumstances exceed one page. If you need two pages, it's a memo or a proposal, not a letter
+4. A letter fits on one page. If it needs two pages, it is a memo or a proposal
 
 ### Changelog
 
 **Core rule**: one sentence per change, verb-led, user-facing language. If the user cannot understand the change from the sentence alone, rewrite it.
+
+**Density bar**: each version block carries 4-8 entries. A version with fewer than 4 entries should sit on the same page as the prior version rather than triggering a near-empty page. See SKILL.md Step 4.1.
 
 | Avoid | Use |
 |---|---|
@@ -380,6 +400,7 @@ Across any document:
 - ≤ 2 emphasized items per line
 - Emphasis must be a **quantifiable number** or a **distinctive phrase**
 - Do not emphasize adjectives
+- In prose-heavy sections, one emphasis per 80-150 words is a healthy default. Short sections do not need a forced highlight
 
 ### Number formatting
 
@@ -398,6 +419,8 @@ Chinese documents:
 - Prefer `「」` for quoted prose, not straight double quotes
 - Keep numbers, commas, percent signs, and dates half-width in metric-heavy areas
 - Add spaces between Chinese text and Latin product names when it improves readability
+- Short copy (UI hints, landing benefit items, changelog entries) joins clauses with commas; a period appears only at the end of the item, or not at all
+- Never use `；` in user-visible strings; split into two sentences or rejoin with a comma. Self-check: grep short-copy blocks for `；` and mid-item `。`
 
 English documents:
 - Use straight quotes in source text unless the document already has a typographic quote convention
@@ -409,9 +432,21 @@ Use `color: var(--brand)` alone - don't also add `font-weight: bold`. Bold break
 
 ---
 
+## Localization pass (multilingual surfaces)
+
+Literal alignment is the failure mode; meaning alignment is the goal. Every time a multilingual page or document changes, finish with a native-reader pass per locale before shipping:
+
+- **Read each locale straight through as a native reader**, not against the source text. Flag every sentence that carries the source language's skeleton: word order, comparison patterns, and punctuation rhythm are all allowed to diverge from the source.
+- **Rewrite, don't adjust.** A source-shaped sentence usually needs its structure rebuilt, not a word swapped. `Buying X is like buying A + B + C at once` may need to become a fresh comparison native speakers would actually say, at the cost of dropping the source's phrasing entirely.
+- **Never transplant rhetorical devices.** Number parallelism, puns, and alliteration die in translation. A benefit line that reads as a device (`One price, five tools`) becomes a plain benefit statement in the target language (`一次购买 永久更新`-style: what the buyer gets, no cleverness).
+- **User-adopted phrasing wins.** If the maintainer has already approved a specific line in one locale, treat it as fixed and localize around it, not over it.
+- **Report the pass.** The handoff lists rewritten-sentence counts per locale; `0 rewrites` after a large copy change is a signal the pass did not happen.
+
+---
+
 ## Pre-ship checklist
 
-Run through before every draft:
+Run through before shipping every draft:
 
 - [ ] Any jargon like "leverage / unlock / embrace / pioneer"? Cut.
 - [ ] Any Chinese filler like "拥抱 / 打造 / 赋能 / 重构"? Rewrite in plain language.
@@ -425,6 +460,94 @@ Run through before every draft:
 - [ ] Number format consistent (commas, percent signs, arrows)?
 - [ ] Chinese punctuation and Chinese / Latin spacing consistent where applicable?
 - [ ] Page count within the document's constraint (resume 2, one-pager 1, letter 1)?
+- [ ] Any AI writing cliches? CN: 本质是 / 这意味着 / 值得注意的是 / 不仅...而且 / 破折号堆砌。EN: em dashes, "It's worth noting", "This means that". See anti-patterns #27.
+- [ ] Multi-page docs (>8 pages / >10 slides): domain terms re-annotated beyond the half-life window? See principle #7.
+- [ ] Multilingual surfaces: native-reader localization pass done per locale, rewrite counts reported?
+
+---
+
+## Landing Page
+
+A landing page is not a brochure. It is a conversion surface. Every element either builds trust or wastes attention.
+
+### Global: screen-only italic exception
+
+Invariant #10 bans italic in print templates. Landing pages are screen-only, so gallery captions, feature subtitles, and footer ethos may use the limited italic treatment defined in `references/design.md`. Do not add new italic uses beyond those roles.
+
+### Hero rules
+
+- **Positioning comes before feature count.** Name the real product category in the first viewport. If the product has grown beyond its old anchor, rewrite the category instead of adding more feature bullets under the old one.
+- **Tagline is one sentence, not a paragraph.** If it needs a comma, it is too long. The user decides in 3 seconds whether to scroll.
+- **Tokens (key facts) are scannable proof.** Price, platform, refund policy, compatibility. No adjectives. `$9 lifetime` beats `Affordable pricing for everyone`.
+- **CTA pair: secondary (try) + primary (buy).** Ghost button for low-commitment action, filled button for revenue action. Never three buttons.
+
+### Section lede rules
+
+- **A section lede is one plain sentence.** No bold, no brand color, no second qualifying line under it. If a comparison or caveat keeps fighting to get in, it belongs in the FAQ or the pricing terms, not the lede.
+- **Competitor names stay out of the hero and ledes.** They live in the FAQ comparison answer and the meta description; naming rivals in the opening viewport frames the product by what it is not.
+
+### Gallery rules
+
+- **Show, don't describe.** Real screenshots replace feature paragraphs. Each panel is one shipped tool, one workflow, or one state users can actually reach.
+- **Technical products can show the workflow itself.** A terminal transcript, command draft, or error recovery panel is a product screenshot when it shows the actual review/confirm boundary.
+- **Poetic captions, not marketing copy.** The line under each screenshot should evoke, not explain. `Rainwater clears the soil` over `Efficiently clean your system caches`.
+- **3-6 panels maximum.** More than 6 and the auto-rotate becomes noise. Users remember 4.
+
+### Features list rules
+
+- **Name is the tool, subtitle is the metaphor.** Feature name in brand color, subtitle in small muted text.
+- **Description answers "so what?"** Not what it does, but why the user should care. One paragraph, 2-3 sentences.
+- **Mechanics fold into the FAQ.** A feature block sells the outcome in a few quiet points; how the product behaves (activation, boundaries, safety rules, edge cases) belongs in FAQ answers. A standalone "behaviors" section is documentation leaking into the pitch, and it usually costs a full screen of scroll.
+
+### Principles rules
+
+- **Title is the commitment, description is the proof.** "Nothing leaves your Mac" is the title. How you enforce it is the description.
+- **4-6 principles.** More than 6 dilutes the message. If you have 8, two are redundant.
+
+### Social proof rules (testimonial content)
+
+Layout lives in `references/design.md` «Testimonial wall»; these rules govern what goes in.
+
+- **The collapsed view sells the current product.** Every quote visible before expansion must praise the product form being sold on this page. Praise for a sibling product line (a CLI when the page sells the GUI, an old major version) confuses buyers into "wait, which product is this"; it may appear after expansion, clearly attributed, or not at all.
+- **Order by credibility, not recency.** Recognizable names first, then high-engagement posts, then well-written quotes from unknowns. A famous person's lukewarm quote beats a stranger's rave.
+- **Quotes with expired facts get replaced or annotated.** An old early-bird price or a stale version number inside a quote reads as current fact to a new visitor. Swap the quote, trim the sentence, or add a short neutral note; never run it as-is.
+- **Collapsed count protects the purchase flow.** Roughly 9-12 quotes before the fold; the wall must not push pricing below comfortable reach. More quotes belong behind the expand control, all at once, no pagination.
+- **External source links dress like quotes.** A "see more on X/search" entry is a card in the same visual language at the end of the wall, one line of copy, not a foreign button floating after it.
+
+### Pricing rules
+
+- **Benefits are the headline, not the price.** The buyer should leave the section feeling "this is worth it", not "this costs money". Lead with 4-6 benefit points: one line each, similar lengths, no wrapping, rendered as a plain borderless list. The price supports the benefits, never the other way around.
+- **State the price once, at medium weight.** One factual line (`$N · One-time purchase` shape), set in a readable but non-headline size. A giant price number turns the section into a price tag and invites "why so expensive" instead of "what do I get". Emphasis comes from placement (centered, own block, generous whitespace), not font size.
+- **The number appears at most twice on the page.** Once in the pricing section, at most once as a hero token. Every extra repetition of the price amplifies price sensitivity.
+- **CTA buttons carry the action, never the price.** `Buy {{PRODUCT}}`, not `Buy for $19`. The buyer already saw the number; putting it on the button makes the click feel like a payment instead of a decision.
+- **Keep the card quiet.** No border, no shadow on the pricing card; if it uses a gradient, it must resolve to the page background color, not to white. The pricing block should feel native to the page, not like a foreign widget.
+- **Compare honestly.** Name the competitors, show their subscription price with `<s>`, then your one-time price. No vague "other tools charge more".
+- **Terms at the bottom.** Payment methods, refund policy, device limit. Factual, not promotional.
+
+### FAQ rules
+
+- **First question is the positioning question.** Before "is it free" or "how do I install", users want to know what category this product is in. Lead with the comparison: "How is this different from {{CLI_NAME}} / {{MAC_APP_NAME}} / {{COMMON_TOOL}}?" or "Who is this not for?". This single question removes the misframing that AI assistants and first-time visitors do most often.
+- **Compare against the tool users already know.** Use named alternatives from the source material, not generic "other apps" language.
+- **Lead with the question the user is actually thinking.** "Is it free?" before "What's the refund policy?".
+- **Answers in 1-2 sentences.** A FAQ answer longer than 3 sentences belongs in the docs page, not here.
+- **6-8 questions maximum.** Cover: positioning, free tier, comparison, permissions/privacy, data collection, purchase flow, licensing.
+- **llms-full.txt mirrors the FAQ.** Whatever you answer here, restate in `landing-page-llms-full.txt.example` so AI assistants summarizing the product give the same answer the visitor reads on the page. Divergence between FAQ and llms-full.txt is the most common AI-misrecommendation source.
+
+### Footer rules
+
+- **Brand mark + closing ethos.** The footer is the last impression. A poetic closing line beats a copyright notice.
+- **Links are navigation, not decoration.** Only link to pages that exist. Dead links destroy trust faster than missing links.
+
+---
+
+## SEO / content-marketing articles
+
+An article written to attract search traffic is a teaching document with the product as a worked example, not a brochure with paragraphs.
+
+- **The reader must learn something they keep.** The article's spine is a transferable mechanism: how a subsystem works, why a class of problem happens, what trade-offs exist. Explain it with real commands, code, or an architecture diagram at teaching depth (see `references/diagrams.md` density tiers), so the reader leaves with knowledge that works without the product.
+- **The product is a worked example, not the subject.** It enters after the mechanism is established, as "here is how one tool applies this", and the product name stays out of the title's subject position.
+- **The deletion test.** Remove every product mention; the article must still stand as a useful piece. If nothing is left, it was an ad, and search engines and readers both treat it as one.
+- **Conclusion gives both paths.** End with what the reader can do manually, then what the product automates. Respecting the manual path is what makes the recommendation credible.
 
 ---
 

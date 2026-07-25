@@ -34,6 +34,59 @@ Each project row uses a fixed three-part structure. The word and character targe
 
 ---
 
+## Source and truth pass
+
+Run this pass before rewriting when the user provides more than one source, such as an old resume plus a self-review, annual review, promotion packet, or project notes.
+
+1. Extract every claim, number, project name, role label, and result from each source.
+2. Use the richer source for its best material, not as a replacement for the other source. Annual reviews often carry the strongest metrics; old resumes often carry the clearest project narrative.
+3. If two sources conflict on scope, owner, unit, or number, ask the user. Do not silently choose the larger or more impressive claim.
+4. Drop numbers whose unit or measurement basis is unclear. A precise, traceable number beats a bigger rounded estimate.
+
+Use precise before/after values when available: `S1 68% / S2 93%` reads more credible than "about 70%". If a number looks like a typo or a unit mismatch, leave it out or mark it as a question.
+
+---
+
+## Personal information hygiene
+
+Age and gender are optional resume metadata, not evidence. In CN / KO recruiting contexts, include them only when the user supplied them and the target channel expects them. Place them in the contact line after location; never promote them into metric cards, summary, or project copy.
+
+Do not invent missing personal details. Do not include expected salary in the resume body. Salary expectations, availability, and negotiation constraints belong in the recruiter message or a separate candidate note unless the user explicitly asks for a form-style resume.
+
+Use role positioning instead of old-style job intention: `AI / Agent 工程` is useful; `求职意向：前端工程师` usually wastes space.
+
+---
+
+## Ownership and title calibration
+
+Role words carry different promises. Pick the lowest truthful word that still reflects the contribution.
+
+| Role word | Boundary | Use when |
+|---|---|---|
+| 方向负责人 / owner / lead | Defined the direction, owned the architecture or outcome, and was the clear accountable person | You can defend the strategy, tradeoffs, and final result |
+| 负责 / drove / led | Independently carried a line or module to production | You owned delivery, but not necessarily the whole direction |
+| 牵头 / coordinated | Pulled multiple people or systems together around a bounded goal | The value was orchestration and delivery pressure |
+| 模块负责人 / module owner | Owned a specific module, industry slice, or workflow | The larger business line had other owners |
+| 共建 / contributed / core contributor | Delivered a distinct piece inside a shared project | Another person or team owns the larger project |
+| 参与 / implemented | Solid execution without ownership | The result is real, but scope should stay modest |
+
+Do not let every project say "主导". A strong resume usually mixes owner-level projects with narrower but concrete contributions. This reads more credible than inflating every line.
+
+---
+
+## Team resume mode
+
+When optimizing multiple resumes from the same team, run a project ownership pass before polishing any single resume.
+
+1. List each person's project names, aliases, role labels, and headline metrics.
+2. Mark shared projects, near-duplicate names, and reused metrics.
+3. Ask the user to confirm the unique owner for any project using owner-level language.
+4. For non-owners, downgrade the role word and switch to the person's distinct contribution or metric dimension.
+
+The goal is not to hide collaboration. The goal is to avoid five resumes all claiming the same project as personally owned. Shared work is credible when each person's scope is different and defensible.
+
+---
+
 ## Metrics: horizontal vs vertical layout
 
 Each project card has a `.metrics` row that shows key numbers. Two layout modes are available.
@@ -135,6 +188,44 @@ For 6 projects there is no pre-built variant; apply the row-6 values directly an
 
 ---
 
+## Two-page balance
+
+Resume output has a stricter contract than general multi-page documents:
+
+- Exactly 2 pages.
+- Each page fill should land around 83-95%.
+- The two pages should differ by less than 12 percentage points.
+
+Verify filled resume PDFs with:
+
+```bash
+python3 scripts/build.py --check-resume-balance path/to/resume.pdf
+```
+
+If page 2 is too empty, fix content before touching typography:
+
+1. Split one mixed project only when it honestly contains two different systems or result dimensions.
+2. Add one real skills row only when the source material already supports it.
+3. Cut filler and repeated metrics before shrinking fonts.
+
+Do not fill space by padding, duplicating a number, or splitting one sentence into two lines. A sparse second page is acceptable only when the source material is genuinely thin and the user prefers restraint over padding.
+
+---
+
+## Visual rhythm for resume templates
+
+Resume uses a quieter divider pattern than long-form templates because it has more repeated headings in two pages.
+
+- Header and section titles use a single warm bottom rule, not a brand-color left bar.
+- Project rows have no top or bottom border; separate them with padding and project-name weight.
+- Top metrics stack the value over the label inside each of the four columns. Metric labels stay on one line; if a label wraps, shorten it before changing the layout.
+- In English resumes, include the unit inside the value (`8 yrs`, `120ms`, `$280K`) rather than as a separate placeholder.
+- Highlight boxes such as open-source validation use tint and radius only, without a vertical brand rail.
+
+This keeps the page editorial and avoids double rules when a project sits directly below a section title or lands at the top of page 2.
+
+---
+
 ## Page 2 rhythm
 
 Page 2 has more space than page 1. Do not compress it to match page 1 density.
@@ -156,3 +247,22 @@ Page 2 has more space than page 1. Do not compress it to match page 1 density.
 This configuration fits 2 pages when TsangerJinKai02 is available. Font fallback to Source Han Serif adds roughly 0.3pt per line; run `--verify` after any font environment change.
 
 Do not scale page 2 font below 9pt to save space. If page 2 still overflows, cut one Convictions card or reduce Skills to 2 rows.
+
+---
+
+## AI engineering resumes
+
+AI-facing resumes should show that the candidate treats AI as an engineered system, not a magic tool or a list of model names.
+
+Use:
+- Mechanisms that turn generation into delivery: evaluation gates, feedback loops, harnesses, regression checks, context boundaries, rollback paths.
+- Clear human / AI division of labor: humans define scope, tradeoffs, and risk; AI may implement, repair, classify, or generate under constraints.
+- Metrics tied to the mechanism: pass rate, failure rate, iteration cycle, case coverage, retrieval precision, hallucination reduction, throughput, review load.
+- Evolution in operating model: prompt craft -> context engineering -> tool orchestration -> automated validation.
+
+Avoid:
+- Listing model or tool names as a skill by itself.
+- Writing "AI improved efficiency by 50%" without saying what baseline, sample, or workflow was measured.
+- Packaging an API demo as an agent platform.
+- Claiming a team or platform result as an individual result.
+- Using filler such as `赋能`, `抓手`, `组合拳`, or `规模化` without a concrete mechanism and metric.
