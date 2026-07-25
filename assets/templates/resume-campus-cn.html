@@ -553,24 +553,50 @@
      改这里之后必须重新生成模板并重新渲染验证。 */
   .proj-label { width: 13mm; }
   .skill-label { width: 24mm; }
+
+  /* ── 证件照（kami 原模板没有照片位，这是校招版新增）──
+     尺寸按中国证件照比例取 17.5×24mm（1 寸是 25×35mm，等比缩小以省版面）。
+     不是 resume-jd-fit 里写的西式方形头像：中文校招简历贴的是证件照。
+     实测每加高 1mm 就吃掉正文 1mm，24mm 是"看得清脸"与"不挤掉内容"的平衡点；
+     真要放大，先确认最后一节还装得下（见 tailoring.md W5 的页数检查）。
+     object-position: top center 保证裁切时优先保留头部。
+     不要照片就删掉 <img class="photo">，这段 CSS 留着无害。 */
+  .header { align-items: flex-start; }
+  .photo {
+    width: 17.5mm; height: 24mm;
+    object-fit: cover; object-position: top center;
+    border-radius: 1mm;
+    border: 0.5pt solid var(--border);
+    margin-left: 5mm;
+    flex-shrink: 0;
+  }
+  .header-main { display: flex; align-items: flex-end;
+                 justify-content: space-between; flex: 1; gap: 6mm; }
 </style>
 
 <div class="header">
-  <div>
-    <div class="name serif">{{姓名}}</div>
+  <div class="header-main">
+    <div>
+      <div class="name serif">{{姓名}}</div>
+    </div>
+    <div class="contact">
+      <span class="role">{{求职意向，如"财务管培生"}}</span>
+      <br>
+      <a href="tel:{{PHONE}}">{{PHONE}}</a>
+      <span class="sep">·</span>
+      <a href="mailto:{{EMAIL}}">{{EMAIL}}</a>
+      <span class="sep">·</span>
+      <span class="loc">{{意向城市}}</span>
+      <!-- 有作品集/GitHub/个人主页才加，没有就删掉整个 a 标签：
+           <span class="sep">·</span><a href="{{URL}}">{{展示名}}</a>
+           不要写期望薪资。除非投递渠道明确要求，不要写年龄性别籍贯。 -->
+    </div>
   </div>
-  <div class="contact">
-    <span class="role">{{求职意向，如"财务管培生"}}</span>
-    <br>
-    <a href="tel:{{PHONE}}">{{PHONE}}</a>
-    <span class="sep">·</span>
-    <a href="mailto:{{EMAIL}}">{{EMAIL}}</a>
-    <span class="sep">·</span>
-    <span class="loc">{{意向城市}}</span>
-    <!-- 有作品集/GitHub/个人主页才加，没有就删掉整个 a 标签：
-         <span class="sep">·</span><a href="{{URL}}">{{展示名}}</a>
-         不要写期望薪资。除非投递渠道明确要求，不要写年龄性别籍贯。 -->
-  </div>
+  <!-- 证件照：src 必须是 base64 data URI，不能用文件路径。
+       理由：四件套要能整体挪走、HTML 双击就能看，用路径一挪就裂图。
+       生成方式见 references/tailoring.md「证件照」一节。
+       不放照片 → 删掉下面整行 img。 -->
+  <img class="photo" src="{{PHOTO_DATA_URI}}" alt="">
 </div>
 
 <!-- 数字条：可选。只有四个数字都真实且有说服力时才留

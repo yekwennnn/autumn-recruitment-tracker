@@ -68,6 +68,34 @@ python3 $SKILL_DIR/scripts/insights.py add-fact --insights $SKILL_DIR/state/matc
 > - 三条红线：① Result 没有真实数字就写规模/状态（如"个人使用，未对外发布"），**禁止编造任何指标**；② 工具辅助查资料 ≠ 开发经验、demo ≠ 上线产品，措辞严格按 resume-jd-fit Step 2 的对照表；③ JD 要求而简历无证据的能力，宁可留白说明，不许硬凑（与 matching.md"无证据按缺失计"同一原则）。
 > - 每条改动记入 meta.json 的 `changes[]`，交付时逐条向用户报告依据，保证每句话面试都能答上。
 
+## W4.5 证件照
+
+中文校招简历默认**贴证件照**（`resume-campus-cn.html` 的 header 右上角有照片位；kami 原模板没有，这是校招版新增）。
+
+照片来源两条路，都用 `resume_store.py photo` 转成 base64 data URI：
+
+```
+# A. 用户直接给照片文件
+python3 $SKILL_DIR/scripts/resume_store.py photo \
+  --file <照片路径> --out $SKILL_DIR/state/tmp/photo.txt
+
+# B. 用户没单独的照片，但旧简历 PDF 里有（抽第 1 页最大的那张图）
+python3 $SKILL_DIR/scripts/resume_store.py photo \
+  --from-pdf <旧简历.pdf> --out $SKILL_DIR/state/tmp/photo.txt
+```
+
+把 `photo.txt` 的内容整个填进模板的 `{{PHOTO_DATA_URI}}`。
+
+规矩：
+
+- **必须用 data URI，不能写文件路径。** 四件套要能整体挪走、`source.html` 双击就能看；写路径一挪就裂图。上一版就是栽在相对路径上。
+- **走 B 路（从旧 PDF 抽）时要告诉用户照片是从哪份文件来的**，别默认他满意那张老照片；但也不要卡在这里等确认，先做完再说一句。
+- 旧 PDF 里没有内嵌图片 → 脚本会明说，改走 A 路请用户提供，**不要自己找图或生成头像**。
+- 照片编码后超过 800KB 脚本会警告。简历上只显示 17.5×24mm，先压到 500px 宽以内再转，PDF 会小很多。
+- **用户明确说不要照片** → 删掉模板里整行 `<img class="photo">`，CSS 留着无害。
+
+隐私：照片和简历原件一样只存在本机 `resumes/` 下（已 gitignore），**永远不进任何子 agent 的 prompt**。
+
 ## W5 渲染
 
 1. `bash $SKILL_DIR/vendor/kami/scripts/ensure-fonts.sh` —— 失败**不阻断**（模板自带 CDN 与系统字体兜底链）。
@@ -97,6 +125,10 @@ python3 $SKILL_DIR/vendor/kami/scripts/build.py --check-markdown "$(cd $SKILL_DI
 抓 `**加粗**`、反引号、`---` 这类漏进成稿的标记——AI 改写内容时很容易留下。
 
 5. 用 pypdf 数页数；超过一页 → 按 resume-jd-fit **Step 5** 修（装了 pdfplumber 就量化测缺口再改；没装就按"压 dense 字号 → 削页边距 → 合并内容行"顺序改后重测页数）。同时按其 Bug 2 检查所有 CJK 标签列不换行。
+
+> **量剩余空间要扣掉页边距。** `页高 - 最后一行 bottom` 量到的是**物理页边**，模板下页边距 11mm 不可用。真正可用空间 = 那个数 − 11mm。踩过一次：显示"剩 23.8mm"却仍然溢出，因为实际只剩 12.8mm，而那一节整块需要 18mm（section 是 `break-inside: avoid`，装不下就整块跳页）。
+>
+> 先用 kami 自带的 `resume--dense`（给 `<body>` 加 `class="resume--dense"`）压一档，不够再动内容。**加 class 时注意**：样式表注释里有一句 `add class="resume--dense" to <body>`，用正则找 `<body>` 会命中那句注释，必须从 `</style>` 之后开始找真标签。
 
 > **页数：我们要一页，kami 要两页——以我们为准。**
 >
