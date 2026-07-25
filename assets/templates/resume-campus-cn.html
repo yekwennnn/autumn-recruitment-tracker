@@ -554,15 +554,15 @@
      上游那两条 @font-face 就没有任何选择器引用，CDN 也不会被请求。
 
      栈内字体授权（都允许商用与嵌入 PDF）：
-       Noto Serif CJK SC  思源宋体      SIL OFL 1.1   默认。宋体，中文简历惯用，笔画实
-       LXGW WenKai        霞鹜文楷      SIL OFL 1.1   楷体，最接近 kami 原本观感，偏软
+       LXGW WenKai        霞鹜文楷      SIL OFL 1.1   默认。楷体，最接近 kami 原本观感
+       Noto Serif CJK SC  思源宋体      SIL OFL 1.1   宋体，中文简历惯用，笔画更实
        Songti SC / STSong 苹果系统字体  仅作兜底
-     装字体：brew install --cask font-noto-serif-cjk-sc font-lxgw-wenkai
+     装字体：brew install --cask font-lxgw-wenkai font-noto-serif-cjk-sc
      一个都没装也能出稿，会退到系统宋体。
 
-     想改用楷体，把 "LXGW WenKai" 调到第一位即可。不要把 TsangerJinKai02 加回来。 */
+     想改用宋体，把 "Noto Serif CJK SC" 调到第一位即可。不要把 TsangerJinKai02 加回来。 */
   :root {
-    --serif: "Noto Serif CJK SC", "Source Han Serif SC", "LXGW WenKai",
+    --serif: "LXGW WenKai", "Noto Serif CJK SC", "Source Han Serif SC",
              "Songti SC", "STSong", Georgia, serif;
     --sans: var(--serif);
   }
