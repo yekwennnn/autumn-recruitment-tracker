@@ -44,7 +44,7 @@ TMP=$SKILL_DIR/state/tmp
 | web-access skill | 子任务 prompt 首句用：「必须加载 web-access skill 并遵循其指引完成联网调研。」 | 改用：「使用你环境中可用的联网工具（网页搜索/网页抓取）完成调研；完全无法联网就如实返回空结果并说明原因。」 |
 | 原生读 PDF/图片 | 直接读简历文件 | `python3 $SKILL_DIR/scripts/extract_text.py --file <简历>` |
 | Skill 加载工具 | 不需要 | 不需要：vendored 技能一律用读文件方式获取指引 |
-| WeasyPrint 等 Python 包 | 产出 PDF 简历 | 交付 HTML + 安装指引（见 README） |
+| WeasyPrint / pypdf | 产出 PDF 简历、数页数 | 交付 HTML + 安装指引（见 README）；`--check-placeholders` 不依赖它们，照跑 |
 
 下文所有「{联网句}」占位符，指按本表第四行选择的那句话。
 
@@ -236,7 +236,7 @@ python3 $SKILL_DIR/scripts/digest.py render \
 
 四个子入口（无人值守一律不进入本节）：
 
-- **定制简历**（一键选中的岗位，或用户贴 JD/说"帮我改简历投XX"）：完整执行 `$SKILL_DIR/references/tailoring.md` 的 W1-W7——选基底（先看 `apply.py stats --by-version`，过筛率明显偏低的版本不要再当基底）、诚实性核查（先查 insights 已沉淀素材，不重复问；新答案立刻 add-fact）、STAR + 实事求是改写、kami 渲染（缺 WeasyPrint 降级 HTML）、四件套存档注册、交付改动清单与前后分数。**诚实性核查（W3）和 STAR 实事求是（W4）在任何环境都不可跳过；每次产出必须 register 存档。** 交付后问一句"投了吗"，用户说投了就按"投递追踪"记一笔。
+- **定制简历**（一键选中的岗位，或用户贴 JD/说"帮我改简历投XX"）：完整执行 `$SKILL_DIR/references/tailoring.md` 的 W1-W7——选基底（先看 `apply.py stats --by-version`，过筛率明显偏低的版本不要再当基底）、诚实性核查（先查 insights 已沉淀素材，不重复问；新答案立刻 add-fact）、STAR + 实事求是改写、kami 渲染（渲染前必须跑 `build.py --check-placeholders` 确认无漏填占位符；缺 WeasyPrint 降级 HTML）、四件套存档注册、交付改动清单与前后分数。**诚实性核查（W3）、STAR 实事求是（W4）和占位符检查在任何环境都不可跳过；每次产出必须 register 存档。** 交付后问一句"投了吗"，用户说投了就按"投递追踪"记一笔。
 - **单个 JD 现评**（用户贴 JD 问匹配度）：按 `references/matching.md` 量表现场打分并给一句优势/一句差距，不写入 state；用户接着要改简历就把分数当 `score_before` 转入定制流程。
 - **查看档案**：`python3 $SKILL_DIR/scripts/resume_store.py list --resumes $SKILL_DIR/resumes`，需要细节时展示对应版本目录下的 `meta.json`。
 - **重看简历分析 / 换方向**：读 `resumes/profile.json` 的 `strengths`/`gaps`/`recommended_directions` 复述，不要重新分析（除非简历换过）。换方向按 resume-profile.md 末节重新归纳 `job_filter` 和 watchlist 写回 config。

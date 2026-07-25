@@ -305,6 +305,22 @@ AI 会自己把文件放到该放的地方，装好会告诉你。**这一步你
 | 改"投了多久算没动静" | `applications.followup_days` / `stale_days` |
 | 改每次深评上限 | `resume.max_deep_evals_per_run` |
 
+## 致谢
+
+**简历的样子，是 [kami](https://github.com/tw93/Kami) 给的。**
+
+这个工具能把你的经历排成一份拿得出手的简历，功劳不在我——排版、字体、留白、那套"暖纸墨蓝"的调子，全部来自 [@Tw93](https://github.com/tw93) 的 kami。它的自我介绍只有一句话：**Good content deserves good paper**（好内容值得好纸）。
+
+我做的只是把你的经历填进去。真正让 HR 在几百份简历里多看两眼的那部分，是 kami 的功劳。
+
+kami 远不止简历——白皮书、一页纸、作品集、幻灯片、信函，一套设计语言贯穿八种文档类型，目前一万多颗星。**如果你还需要排版别的东西，强烈建议直接去用它本体**，本仓库只内嵌了简历那一小块。
+
+本仓库以 MIT 协议内嵌 kami **V1.10.0**（版本号见 `vendor/kami/VERSION`），未作任何修改，收录范围与升级方式详见 `vendor/README.md`。中文主字体仓耳今楷是商业授权字体，按 kami 的要求不随包分发，由脚本在你本机运行时下载。
+
 ## License
 
-MIT，见 `LICENSE`。`vendor/kami` 为 MIT 协议内嵌的第三方作品（© Tw93），详见 `vendor/README.md`。
+MIT，见 `LICENSE`。
+
+- `vendor/kami/` —— © [Tw93](https://github.com/tw93)，MIT License，原始声明见 `vendor/kami/LICENSE`。
+- `vendor/kami/assets/fonts/JetBrainsMono.woff2` —— JetBrains Mono，SIL Open Font License 1.1。
+- 仓耳今楷（TsangerJinKai02）**不在本仓库内**，商业授权字体，运行时从官方站点下载。

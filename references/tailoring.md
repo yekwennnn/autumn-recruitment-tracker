@@ -51,16 +51,41 @@ python3 $SKILL_DIR/scripts/insights.py add-fact --insights $SKILL_DIR/state/matc
 ## W5 渲染
 
 1. `bash $SKILL_DIR/vendor/kami/scripts/ensure-fonts.sh` —— 失败**不阻断**（模板自带 CDN 与系统字体兜底链）。
-2. 渲染 PDF：
+
+2. **渲染前先查占位符**（kami V1.10.0 起提供，**这一步不可跳**）：
+
+```
+python3 $SKILL_DIR/vendor/kami/scripts/build.py --check-placeholders <版本目录>/source.html
+```
+
+漏填的 `{{姓名}}`、`{{EMAIL}}` 之类会被逐个列出来。**报错就回去填，不许带着占位符往下走**——投出去一份写着 `{{姓名}}` 的简历是这个流程能造成的最严重事故。
+
+3. 渲染 PDF：
 
 ```
 python3 -c "from weasyprint import HTML; HTML('<版本目录>/source.html', base_url='<版本目录>').write_pdf('<版本目录>/resume.pdf')"
 ```
 
-3. 用 pypdf 数页数；超过一页 → 按 resume-jd-fit **Step 5** 修（装了 pdfplumber 就量化测缺口再改；没装就按"压 dense 字号 → 削页边距 → 合并内容行"顺序改后重测页数）。同时按其 Bug 2 检查所有 CJK 标签列不换行。
+4. **查 markdown 残留**（同样是 V1.10.0 起提供）：
+
+```
+python3 $SKILL_DIR/vendor/kami/scripts/build.py --check-markdown <版本目录>/resume.pdf
+```
+
+抓 `**加粗**`、反引号、`---` 这类漏进成稿的标记——AI 改写内容时很容易留下。
+
+5. 用 pypdf 数页数；超过一页 → 按 resume-jd-fit **Step 5** 修（装了 pdfplumber 就量化测缺口再改；没装就按"压 dense 字号 → 削页边距 → 合并内容行"顺序改后重测页数）。同时按其 Bug 2 检查所有 CJK 标签列不换行。
+
+> **页数：我们要一页，kami 要两页——以我们为准。**
+>
+> kami 的 resume 模板是按**两页**设计的（`vendor/kami/references/resume-writing.md` 的 "Two-page balance" 一节写着"Exactly 2 pages"、每页填充 83-95%），面向的是资深工程师的作品集式简历。**中文校招简历是一页制**，HR 一天筛几百份，第二页基本不会看。
+>
+> 所以：读 kami 的 resume-writing.md 取排版手法（字号、行高、分栏的对应表很有用），但**页数标准一律以本流程的"一页"为准**，不要因为 kami 说两页就交两页的校招简历。
+>
+> 同理，**不要用 `build.py --check-resume-balance`**——它强制两页契约，对校招简历必然误报（它还依赖 PyMuPDF，多半没装）。
 
 **降级阶梯**：
-- 无 WeasyPrint → 只交付 `source.html`（meta.json 的 `render` 记 `html_only`），附一句安装指引（见 README"想直接出 PDF 简历？"节）。
+- 无 WeasyPrint → 只交付 `source.html`（meta.json 的 `render` 记 `html_only`），附一句安装指引（见 README"想直接出 PDF 简历？"节）。占位符检查**不依赖 WeasyPrint，任何情况下都要跑**。
 - 无 pymupdf → 不做旧 PDF 抽照片，改为请用户提供照片文件，或不放照片。
 
 ## W6 存档
