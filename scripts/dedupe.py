@@ -7,10 +7,12 @@ Usage:
 
 candidates.json: JSON array of objects with fields:
   company, title, city, highlight, source_url, source_platform
-  (discovered_date optional, defaults to today)
+  (lane, deadline, discovered_date optional)
 
 Prints the list of newly-seen postings (JSON array) to stdout (or --output
-file if given), and updates the state file in place.
+file if given), and updates the state file in place. Per-lane new-posting
+counts are stashed in state["_last_run_lane_new"] for discovery.py commit to
+consume; postings whose deadline has passed are flagged expired.
 """
 import argparse
 import hashlib
@@ -73,18 +75,54 @@ def save_json(path, obj):
 
 
 def maybe_archive_season(state, config, state_path):
+    """Archive the finished season and start a clean state for the next one.
+
+    The archive keeps the *old* season's label; the fresh state takes the label
+    currently configured. Cursors, sweep history and yield stats deliberately
+    reset — they describe the season that just ended.
+    """
     season_end = config.get("season_end_date")
     if not season_end:
-        return state
+        return state, None
     try:
         if date.today() <= date.fromisoformat(season_end):
-            return state
+            return state, None
     except ValueError:
-        return state
-    season_label = state.get("season", "season")
-    archive_path = state_path.replace(".json", f".{season_label}.json")
+        return state, None
+    old_label = state.get("season") or "season"
+    archive_path = state_path.replace(".json", f".{old_label}.json")
     save_json(archive_path, state)
-    return {"schema_version": 1, "season": season_label, "last_run": None, "postings": {}}
+    fresh = {
+        "schema_version": 2,
+        "season": config.get("target_season_label") or old_label,
+        "last_run": None,
+        "wechat_rotation_cursor": 0,
+        "last_full_sweep": None,
+        "source_yield": {},
+        "postings": {},
+    }
+    return fresh, {"archived_to": archive_path, "old_season": old_label,
+                   "new_season": fresh["season"], "season_end": season_end}
+
+
+def mark_expired(state, config, today):
+    """Flag postings whose application deadline has passed."""
+    if not config.get("deadline", {}).get("archive_expired", True):
+        return 0
+    newly = 0
+    for rec in state.get("postings", {}).values():
+        if rec.get("expired"):
+            continue
+        raw = rec.get("deadline")
+        if not raw:
+            continue
+        try:
+            if date.fromisoformat(str(raw)[:10]) < today:
+                rec["expired"] = True
+                newly += 1
+        except ValueError:
+            continue
+    return newly
 
 
 def prune_stale(state, retention_days):
@@ -113,15 +151,20 @@ def main():
 
     candidates = load_json(args.input, [])
     config = load_json(args.config, {})
-    state = load_json(args.state, {"schema_version": 1, "season": config.get("target_season_label", "season"), "last_run": None, "postings": {}})
+    state = load_json(args.state, {"schema_version": 2, "season": config.get("target_season_label", "season"), "last_run": None, "postings": {}})
 
-    state = maybe_archive_season(state, config, args.state)
+    state, rollover = maybe_archive_season(state, config, args.state)
+
+    for h, rec in state.get("postings", {}).items():
+        rec.setdefault("id", h)
+    state["schema_version"] = 2
 
     postings = state.setdefault("postings", {})
     fuzzy_index = {fuzzy_key(rec["company"], rec["title"]): h for h, rec in postings.items()}
 
     today = today_str()
     new_only = []
+    lane_new = {}
 
     for c in candidates:
         company = c.get("company", "").strip()
@@ -143,23 +186,40 @@ def main():
             continue
 
         rec = {
+            "id": h,
             "company": company,
             "title": title,
             "city": c.get("city", "未注明"),
             "highlight": c.get("highlight", ""),
             "source_platform": c.get("source_platform", ""),
             "source_url": url,
+            "lane": c.get("lane", ""),
             "first_seen": today,
             "last_confirmed": today,
         }
+        if c.get("deadline"):
+            rec["deadline"] = c["deadline"]
         postings[h] = rec
         fuzzy_index[fkey] = h
         new_only.append(rec)
+        if rec["lane"]:
+            lane_new[rec["lane"]] = lane_new.get(rec["lane"], 0) + 1
 
+    expired = mark_expired(state, config, date.today())
     state = prune_stale(state, config.get("state_retention_days"))
+    state["_last_run_lane_new"] = lane_new
     state["last_run"] = datetime.now().astimezone().isoformat()
 
     save_json(args.state, state)
+
+    if rollover:
+        sys.stderr.write(
+            f"提示：{rollover['season_end']} 已过，上一季（{rollover['old_season']}）状态已归档到 "
+            f"{rollover['archived_to']}，当前季标记为 {rollover['new_season']}。"
+            "请确认 config.json 的 target_grad_year / target_season_label / season_end_date "
+            "是否需要滚动到新一季。\n")
+    if expired:
+        sys.stderr.write(f"提示：{expired} 个岗位已过网申截止日期，标记为 expired。\n")
 
     out = json.dumps(new_only, ensure_ascii=False, indent=2)
     if args.output:

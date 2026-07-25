@@ -16,5 +16,36 @@
     "formal_recruit_keywords": [
       "校园招聘", "校招", "管培生", "应届生", "全职", "正式员工"
     ]
+  },
+  "resume": {
+    "enabled": true,
+    "max_deep_evals_per_run": 15,
+    "jd_fetch_parallel_agents": 3,
+    "jd_fetch_max_attempts": 2,
+    "min_score_for_action": 70,
+    "auto_deep_eval_when_unattended": true,
+    "jd_fetch_agent_model": "haiku"
+  },
+  "discovery": {
+    "company_watchlist": [],
+    "watchlist_batch_size": 12,
+    "mode": "lean",
+    "full_sweep_weekday": 6,
+    "agent_model": {
+      "wechat": "sonnet",
+      "aggregator": "haiku"
+    },
+    "known_company_hint_max": 200,
+    "disabled_lanes": [],
+    "auto_demote_after_zero_runs": 6
+  },
+  "applications": {
+    "enabled": true,
+    "followup_days": 14,
+    "stale_days": 30
+  },
+  "deadline": {
+    "warn_days": 7,
+    "archive_expired": true
   }
 }
