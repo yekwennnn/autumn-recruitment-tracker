@@ -543,6 +543,18 @@
        python3 -c "from weasyprint import HTML; HTML('resume.html').write_pdf('out.pdf')"
      ═══════════════════════════════════════════════════════════════════ -->
 
+<style>
+  /* ── 校招版对 kami 版式的唯一覆盖，改动理由必须写在这里 ──
+     kami 的 .proj-label 默认 11mm。9pt 下一个汉字约 9pt≈3.2mm，四字标签需要
+     ≈12.7mm，于是"风险合规"会被切成"风险合"+"规"两行——resume-jd-fit 记录的
+     Bug 2。中文校招简历的标签几乎全是四字（风险合规/数据建模/经营分析…），
+     所以这是必然触发而不是偶发，放宽到 13mm 一次性解决。
+     .skill-label 同理：22mm 装不下七字标签，放宽到 24mm。
+     改这里之后必须重新生成模板并重新渲染验证。 */
+  .proj-label { width: 13mm; }
+  .skill-label { width: 24mm; }
+</style>
+
 <div class="header">
   <div>
     <div class="name serif">{{姓名}}</div>
