@@ -9,11 +9,11 @@ description: >
   档案化、逐字段核对、提交前必须经你确认），投出去之后还能追踪进展。当需要首次设置、手动触发监控、检查监控
   状态、修改监控方向、查看岗位匹配度、根据JD改简历、管理简历版本、记录/查询投递进展、或者要
   帮忙填网申/自动填写某公司官网网申表单时使用此技能。
-version: "2.2.0"
+version: "2.3.0"
 user_invocable: true
 metadata:
   author: yekaiwen
-  version: "2.2.0"
+  version: "2.3.0"
 ---
 
 # 秋招求职助手：简历分析 + 岗位监控 + JD 深评 + 改简历 + 投递追踪
@@ -29,10 +29,10 @@ TMP=$SKILL_DIR/state/tmp
 
 - 配置：`$SKILL_DIR/config.json`（届别/季节/方向/关键词/深评参数/公司池/发现层策略，首次使用可能不存在，见第 0 步）、`$SKILL_DIR/config.example.json`（模板，不要直接改它）
 - 状态：`$SKILL_DIR/state/seen_postings.json`（岗位、深评状态、截止日期，顶层含发现层账本）、`$SKILL_DIR/state/match_insights.json`（累积洞察）、`$SKILL_DIR/state/applications.json`（投递记录）
-- 简历档案：`$SKILL_DIR/resumes/`（`index.json` 版本索引、`profile.json` 求职画像与简历分析、`originals/` 原件、`versions/<id>/` 各版本、`webapply-profile.json` 网申档案（含真实联系方式与开放题答案库，绝不入库）、`photos/` 证件照）
+- 简历档案：`$SKILL_DIR/resumes/`（`index.json` 版本索引、`profile.json` 求职画像与简历分析、`originals/` 原件、`versions/<id>/` 各版本、`webapply-profile.json` 网申档案（含真实联系方式与开放题答案库，绝不入库）、`experience-bank.json` 经历素材库（按经历存已确认的量化事实与 STAR 故事，绝不入库）、`photos/` 证件照）
 - 脚本：`$SKILL_DIR/scripts/` 下 `discovery.py`（发现层排程与账本）、`dedupe.py`（去重）、`digest.py`（日报渲染）、`extract_text.py`（PDF/DOCX 文本抽取降级链）、`resume_store.py`（简历档案管理）、`match_state.py`（深评状态机）、`insights.py`（洞察累积）、`apply.py`（投递追踪）、`make_campus_template.py`（生成校招简历模板）
 - 简历模板：`$SKILL_DIR/assets/templates/resume-campus-cn.html`（**中文校招默认模板**，一页制，教育背景在实习经历之前；由 `make_campus_template.py` 从 `assets/campus-body.html` + kami 版式生成，**不要直接编辑**）
-- 参考文档：`$SKILL_DIR/references/` 下 `sources.md`（车道定义与轮转策略）、`keyword-filters.md`（过滤逻辑）、`resume-profile.md`（简历导入、分析与画像）、`matching.md`（JD 抓取契约与评分量表）、`tailoring.md`（一键改简历 W1-W7）、`applications.md`（投递追踪）、`webapply.md`（网申自动填表）、`webapply-patterns/<domain>.md`（各网申系统的表单经验，只存结构不存个人数据）、`digest-format.md`（日报格式）
+- 参考文档：`$SKILL_DIR/references/` 下 `sources.md`（车道定义与轮转策略）、`keyword-filters.md`（过滤逻辑）、`resume-profile.md`（简历导入、分析与画像）、`matching.md`（JD 抓取契约与评分量表）、`tailoring.md`（一键改简历 W1-W7）、`applications.md`（投递追踪）、`experience-mining.md`（经历深挖七问法）、`webapply.md`（网申自动填表）、`webapply-patterns/<domain>.md`（各网申系统的表单经验，只存结构不存个人数据）、`digest-format.md`（日报格式）
 - 内嵌技能：`$SKILL_DIR/vendor/kami/`（简历排版工具箱）、`$SKILL_DIR/vendor/resume-jd-fit/SKILL.md`（JD 定制改简历指引）——一律用读文件方式获取内容，不依赖任何技能加载工具
 - 外部依赖（**仅网申填表用**）：`web-access` skill 提供浏览器 CDP 能力——优先用技能加载工具加载，加载不了就读 `~/.claude/skills/web-access/SKILL.md`。本技能只调用它的 `scripts/check-deps.mjs`、`scripts/cdp-proxy.mjs` 和 `localhost:3456` 的 HTTP 接口；**网申表单经验写在本技能自己的 `references/webapply-patterns/`**，不写进 web-access 的目录（纯浏览层的通用经验除外，那个按它自己的约定写它的 `site-patterns/`）
 
@@ -245,6 +245,7 @@ python3 $SKILL_DIR/scripts/digest.py render \
 - **定制简历**（一键选中的岗位，或用户贴 JD/说"帮我改简历投XX"）：完整执行 `$SKILL_DIR/references/tailoring.md` 的 W1-W7——选基底（先看 `apply.py stats --by-version`，过筛率明显偏低的版本不要再当基底）、诚实性核查（先查 insights 已沉淀素材，不重复问；新答案立刻 add-fact）、STAR + 实事求是改写、kami 渲染（渲染前必须跑 `build.py --check-placeholders` 确认无漏填占位符；缺 WeasyPrint 降级 HTML）、四件套存档注册、交付改动清单与前后分数。**诚实性核查（W3）、STAR 实事求是（W4）和占位符检查在任何环境都不可跳过；每次产出必须 register 存档。** 交付后问一句"投了吗"，用户说投了就按"投递追踪"记一笔；用户说要去官网网申的，可以直接转入"网申填表"（路由 E）用这一版简历填表。
 - **单个 JD 现评**（用户贴 JD 问匹配度）：按 `references/matching.md` 量表现场打分并给一句优势/一句差距，不写入 state；用户接着要改简历就把分数当 `score_before` 转入定制流程。
 - **查看档案**：`python3 $SKILL_DIR/scripts/resume_store.py list --resumes $SKILL_DIR/resumes`，需要细节时展示对应版本目录下的 `meta.json`。
+- **深挖经历**（用户说"陪我挖挖经历""深挖一下XX那段实习""帮我把这段经历展开"）：按 `$SKILL_DIR/references/experience-mining.md` 的**七问法**逐段挖（角色边界/最难瞬间/决定取舍/量化前后/反事实/能力证明/可展示证据），一次一段、5-8 问封顶，结果存 `resumes/experience-bank.json`。**红线同 W3：只记用户亲口说的，数字记不清就标"约"或不记，绝不替用户圆数。** 挖到的素材后续供改简历、网申开放题、面试排练三处复用。
 - **重看简历分析 / 换方向**：读 `resumes/profile.json` 的 `strengths`/`gaps`/`recommended_directions` 复述，不要重新分析（除非简历换过）。换方向按 resume-profile.md 末节重新归纳 `job_filter` 和 watchlist 写回 config。
 
 ## 投递追踪

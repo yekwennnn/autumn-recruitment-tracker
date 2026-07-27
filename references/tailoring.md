@@ -13,6 +13,7 @@
 
 - 来自日报的岗位：直接用 state 里该岗位的 `match.jd_summary` / `jd_url`；需要更多细节时按 `references/matching.md` 的抓取契约现抓全文。
 - 用户贴的 JD：直接用原文。
+- 手头的素材：除简历原文外，还有 `resumes/experience-bank.json`（按经历存的已确认量化事实与 STAR 故事）。**改写取材优先从这里拿**——它比简历原文更细，且都是用户确认过的。
 
 ## W2 选基底
 
@@ -25,14 +26,24 @@ python3 $SKILL_DIR/scripts/resume_store.py pick-base --resumes $SKILL_DIR/resume
 
 ## W3 差距分析与诚实性核查
 
-1. 先跑 `python3 $SKILL_DIR/scripts/insights.py show --insights $SKILL_DIR/state/match_insights.json`——**`confirmed_facts` 里已沉淀的素材不要重复追问用户**，直接当作已核实证据用。
+1. 先跑 `python3 $SKILL_DIR/scripts/insights.py show --insights $SKILL_DIR/state/match_insights.json`——**`confirmed_facts` 里已沉淀的素材不要重复追问用户**，直接当作已核实证据用。同时读 `resumes/experience-bank.json`：里面按经历存着已确认的量化事实和 STAR 故事，**也不要重复问**。
 2. 然后执行 `vendor/resume-jd-fit/SKILL.md` 的 **Step 1（JD 差距分析）→ Step 2（诚实性核查）→ Step 3（保密脱敏）**，一步不跳。
+
+   > **Step 1 判定"这是短板"之前先挖一轮。** JD 要某项能力、简历这块却很薄——
+   > 常见的原因不是没做过，而是没写出来。按 `references/experience-mining.md` 对相关经历
+   > 定向问 3-5 个问题（只问这项能力相关的），挖到的当场用进这一版；挖完仍然空，
+   > 才写进差距分析。这一步能救回不少被简历埋掉的经历。
+
 3. Step 2 每问出一条新的真实素材，**立刻**沉淀：
 
 ```
 python3 $SKILL_DIR/scripts/insights.py add-fact --insights $SKILL_DIR/state/match_insights.json \
   --claim "<一句话主张>" --detail "<具体做了什么/角色/产出>" --stage "demo|个人使用|已上线|其他"
 ```
+
+  这条事实如果明显属于某段具体经历（某次实习、某个项目），**顺手往 `resumes/experience-bank.json`
+  对应经历的 `facts` 里也归一份**（标 `from_insights: true`）。两边都留，不互相删——
+  insights 管跨岗位的匹配层洞察，素材库管经历本身，将来网申开放题和面试排练都从素材库取。
 
 ## W4 改写
 
