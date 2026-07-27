@@ -97,24 +97,51 @@
 
 状态机，按顺序走。每一步都有明确的产出，别跳步。
 
-**S1 开 tab** —— `curl -s "http://localhost:3456/new?url=<网申链接>"`，保留 URL 的完整 query 参数（很多系统靠参数定位岗位）。记下返回的 `targetId`，后续所有请求都带它。
+**S1 开 tab** —— `curl -s "http://localhost:3456/new?url=<网申链接>"`，保留 URL 的完整 query 参数（很多系统靠参数定位岗位）。**hash 路由的站点要把 `#` 写成 `%23`**（如 `campus.jd.com/home%23/resume?type=present`），否则 `#` 后面全被当锚点丢掉。记下返回的 `targetId`，后续所有请求都带它。
 
-**S2 判断登录态** —— 标准是「我要的东西拿到了吗」，不是「页面上有没有登录按钮」。读不到申请表内容 → 告诉用户"需要你先在 Chrome 里登录这个站点（含验证码），登录好了跟我说一声"，等用户回话后 `/navigate` 刷新继续。**不要试图代登录。**
+用户已经开着目标站点的 tab 时：可以用 `/targets` 看一眼 URL 判断是哪个系统，但**操作一律在自己新开的 tab 里**（红线④）。同一个 Chrome，登录态本来就是共享的。
 
-**S3 读经验** —— 先查本技能的 `references/webapply-patterns/`：精确域名文件（如 `dreame.zhiye.com.md`）优先，没有就按系统识别特征匹配系统级文件（如 `beisen.md`）。再顺手看一眼 web-access 的 `references/site-patterns/{domain}.md`（那边记的是浏览层经验，可能有反爬、innerText 之类的坑）。
+**S2 判断登录态与站点形态** —— 登录态的判断标准是「我要的东西拿到了吗」，不是「页面上有没有登录按钮」。读不到申请表内容 → 告诉用户"需要你先在 Chrome 里登录这个站点（含验证码），登录好了跟我说一声"，等用户回话后 `/navigate` 刷新继续。**不要试图代登录。**
 
-**S4 读表单结构** —— 用 `/eval` 遍历 DOM，提取：分步向导有几步、当前这步有哪些字段、每个字段的 label／控件类型／是否必填／可用的选择器。注意穿透 iframe 和 shadowRoot。北森系记得用 `textContent` 而不是 `innerText`（见 `webapply-patterns/beisen.md`）。
+顺手判断这个站点属于哪一形态，它决定了 S9/S10 怎么收尾：
 
-**S5 生成字段映射预览表** —— 发给用户：
+| 形态 | 特征 | 终局动作 | 记不记投递 |
+|---|---|---|---|
+| **逐岗申请表** | 表单绑定某个岗位，底部有「提交／确认投递／申请」 | 提交 = 投递，不可逆 | 提交成功后记 |
+| **在线简历中心** | 一份账号级简历，底部只有「保存／返回」，投递在职位页另行发生 | 保存 ≠ 投递，但**会覆盖线上旧简历** | 保存时不记；等用户真投了岗位再记 |
+
+**S3 读经验** —— 先查本技能的 `references/webapply-patterns/`：精确域名文件（如 `campus.jd.com.md`）优先，没有就按系统识别特征匹配系统级文件（如 `beisen.md`）。**匹配错了比没匹配更糟**——北森要 clickAt、antd 普通 click 就行，套错一套会白折腾很久，所以先用类名前缀确认系统（`bsrc-` = 北森，`ant-` = Ant Design）再决定用哪份经验。再顺手看一眼 web-access 的 `references/site-patterns/{domain}.md`（那边记的是浏览层经验，可能有反爬、innerText 之类的坑）。
+
+**S4 读表单结构与现值** —— 用 `/eval` 遍历 DOM，提取：分步向导有几步、当前这步有哪些字段、每个字段的 label／控件类型／是否必填／**当前已有的值**／可用的选择器。注意穿透 iframe 和 shadowRoot。北森系记得用 `textContent` 而不是 `innerText`（见 `webapply-patterns/beisen.md`）。
+
+> **红线字段的值一律不读进对话。** label 匹配 `证件号码|身份证|护照|银行卡|卡号|密码|verify|captcha` 的字段，
+> 提取脚本里就把 value 替换成 `〈已填·打码〉`／`〈空〉`，**只保留"填没填"这一个比特**。
+> 这些值不进你的回复、不进截图说明、不进任何日志或 pattern 文件。
+> 已经填好的证件号你既不需要核对也不需要复述——你唯一要知道的是"这格不用管"。
+
+**S5 生成字段映射预览表** —— 先判断表单是空表还是已有内容：
+
+**表单已有内容（常见，尤其是"在线简历中心"型站点）→ 走 diff 模式**，只列有差异的行，一致的不用刷屏：
+
+| 表单字段 | 现值 | 拟改为 | 理由 |
+|---|---|---|---|
+| 电子邮箱 | 〈旧邮箱〉 | 〈档案 basic.email〉 | 与投递材料保持一致 |
+| 教育经历 | 只有本科 | 新增硕士一条 | 档案有但表单缺，影响学历筛选 |
+| 证件号码 | 〈已填·打码〉 | 不动 | **红线字段，我不碰** |
+
+**空表 → 走填充模式**：
 
 | 表单字段 | 必填 | 将填入 | 来源 | 备注 |
 |---|---|---|---|---|
-| 姓名 | ✅ | 〈档案里的真实姓名〉 | 档案 basic.name | |
+| 姓名 | ✅ | 〈档案 basic.name〉 | 档案 | |
 | 身份证号 | ✅ | —— | —— | **红线字段，需你手填** |
-| 最高学历毕业院校 | ✅ | 〈档案里的学校〉 | 档案 education[0].school | |
 | 期望城市 | ✅ | —— | 档案缺 | 现场问你，答完写回档案 |
 
 （示例里用占位符是有意的：这份文档要入库，不能带真实信息。实际发给用户的表要填真值。）
+
+**别假设表单是白纸。** 老账号里躺着两三年前填的旧简历是常态，页面还可能显示"完成度 100%"——
+那说的是格式完整，不是内容最新。**任何覆盖已有内容的改动都要在表里写清"现值 → 拟改为"，
+让用户看见他将失去什么。**
 
 档案里没有的字段**当场问**，问到就写回档案（第 2.3 节的规矩）。红线字段一律标「需你手填」，不给建议值。
 
@@ -122,13 +149,26 @@
 
 **S7 逐节填写** —— 一节填完做三件事：`/eval` 读回已填的值核对、`/screenshot` 存截图、简短汇报这节填了什么。写不进去的字段见第 4 节的处置规则。
 
-截图存 `state/tmp/webapply/<YYYYMMDD-HHMM>/section-N.png`，`file` 参数必须给绝对路径（用 `$PWD` 拼）。
+截图存 `state/tmp/webapply/<YYYYMMDD-HHMM>/section-N.png`，`file` 参数必须给绝对路径。**路径含中文时必须让 curl 做 URL 编码**，否则接口返回成功但文件不落盘：
 
-**S8 多步向导** —— 「保存」「下一步」「暂存」这类**非终局按钮**，告知用户一声后可以直接点。每进入新的一步，回到 S4 重新读这一屏的字段。
+```bash
+curl -s -G --data-urlencode "target=$T" --data-urlencode "file=$PWD/state/tmp/webapply/$TS/s1.png" http://localhost:3456/screenshot
+```
 
-**S9 提交前停下** —— 整页截图 + 汇总"已填 N 节 M 个字段，留空 X 项（列出来）"，请用户核对。**默认到此为止**。用户明确说要提交 → 再复述一次「我将点击『提交』，这一步不可逆」，取得二次确认后才 `/click`；或者干脆让用户自己在浏览器里点。
+**S8 中途按钮** —— 「下一步」「暂存」这类**非终局按钮**，告知用户一声后可以直接点。每进入新的一步，回到 S4 重新读这一屏的字段。
 
-**S10 提交之后** —— 成功页截图 → 按第 9 节记投递 → 按第 10 节写回 pattern 经验 → `/close` 关掉自己开的 tab。
+「保存」要看形态：分步向导中途的保存草稿可以直接点；**"在线简历中心"型站点的「保存」是终局动作**（它覆盖用户线上的简历），按 S9 处理。
+
+**S9 终局动作前停下** —— 整页截图 + 汇总"改了 N 处（逐条列出现值→新值）、留空 X 项"，请用户核对。**默认到此为止。**
+
+用户明确说要继续 → 复述一次这一步的后果，取得二次确认后才点：
+
+- 逐岗申请表：「我将点击『提交』，投递不可逆」
+- 在线简历中心：「我将点击『保存』，你线上原来的简历会被这一版覆盖」
+
+或者干脆让用户自己在浏览器里点。
+
+**S10 之后** —— 结果页截图并读回验证 → **逐岗申请表**按第 9 节记投递；**在线简历中心**不记投递，改为提醒用户"简历更新好了，等你在职位页投了具体岗位再跟我说，我来记账" → 按第 10 节写回 pattern 经验 → `/close` 关掉自己开的 tab。
 
 ---
 
@@ -141,10 +181,36 @@
 | **React 受控 input／textarea** | 有 `value`，但直接赋值被组件吞掉 | 用原生 setter 绕过 React 的劫持：<br>`const s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set; s.call(el,v); el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true}));`<br>textarea 用 `HTMLTextAreaElement.prototype` |
 | **原生 select** | `<select>` 标签 | 设 `value` 后 dispatch `change` |
 | **自绘下拉 / 级联地区** | 点开是 div 浮层，不是 `<option>` | 先 `/click` 展开，浮层里按 `textContent` 定位选项；没反应就换 `/clickAt`。省市区**逐级选**，每级选完等浮层刷新再选下一级 |
+| **Ant Design 下拉／级联** | 类名 `ant-select` / `ant-cascader-picker` | **普通 `el.click()` 就行，不需要 clickAt**（与北森相反）。展开后读 `.ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-dropdown-menu-item`，按 textContent 精确匹配再 `.click()`；级联读 `.ant-cascader-menus:not(.ant-cascader-menus-hidden) .ant-cascader-menu`。**读完枚举值记得关浮层**，否则叠在页面上干扰后续操作 |
 | **日期选择器** | 自绘日历弹层 | 优先找背后的隐藏 `input` 直接用原生 setter 写；找不到才逐月翻页点日期 |
 | **单选 / 复选 / 树** | 北森系类名含 `bsrc-` | **必须 `/clickAt`**，合成 `el.click()` 对这类组件无效。点完读 className 确认状态（如含 `bsrc-tree-checkbox-checked`），**别只看截图判断**——选中态的视觉变化常常很不明显 |
 | **富文本编辑器** | `contenteditable` | `/eval` 设 `innerText` 后 dispatch `input` |
-| **文件上传** | `input[type=file]`，常被 CSS 藏起来 | `/setFiles`，body 传 `{"selector":"input[type=file]","files":["<绝对路径>"]}`，完全绕过文件对话框。找不到 file input 才考虑 `/clickAt` 触发对话框——但那需要用户手选文件，不如直接请用户操作 |
+| **文件上传** | `input[type=file]`，常被 CSS 藏起来 | `/setFiles`，body 传 `{"selector":"input[type=file]","files":["<绝对路径>"]}`，完全绕过文件对话框。**传完必查弹窗，见下**。找不到 file input 才考虑 `/clickAt` 触发对话框——但那需要用户手选文件，不如直接请用户操作 |
+
+### 上传之后必须查弹窗
+
+`/setFiles` 返回 `success` **不代表上传完成**。很多系统会在这一步弹确认框等着，
+此时 `input.files.length` 已归 0（组件读走了文件）但页面显示没变——
+很容易误判成"上传失败"然后反复重传。
+
+所以传完固定做两件事：
+
+1. 查 `.ant-modal-wrap` / `[class*=modal]` 里有没有 `offsetParent !== null` 的可见弹窗；
+2. 读弹窗文本。**凡是含「解析／覆盖／丢失／替换原有」这类字样的，一律默认选保守项**
+   （"仅上传附件"／"取消"），并把弹窗原文和截图给用户看。
+
+京东就有一个典型例子：上传简历后问"是否根据附件自动填写"，选"是"会**用 PDF 解析结果
+覆盖整张表**——用户几年积累的经历描述全没。详见 `webapply-patterns/campus.jd.com.md`。
+
+点这类弹窗按钮**必须按文本精确匹配并二次校验**，不要靠 index 或位置：
+
+```js
+const safe = [...document.querySelectorAll("button,.ant-btn")]
+  .filter(el => el.offsetParent !== null && el.textContent.trim() === "否，仅上传附件");
+if (safe.length !== 1) return "匹配数≠1，中止";        // 定位漂移就不点
+if (safe[0].textContent.includes("解析")) return "拒绝"; // 点前再确认一次不是危险项
+safe[0].click();
+```
 
 **通用规矩**：
 
