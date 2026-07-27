@@ -5,18 +5,20 @@ description: >
   正式校招岗位（届别/季节/是否含实习由 config.json 驱动）。发现层按"公众号每天、聚合平台
   每周"轮转并用便宜模型跑，对每个新岗位抓 JD 做 0-100 匹配度深评、抓网申截止日期并预警，
   支持按 JD 一键定制简历（内嵌 kami 排版与诚实性核查，STAR法则+实事求是，产出PDF并多版本
-  存档），还能自动填写企业官网的网申表单（京东校招、北森/zhiye 等校招网申系统：个人信息
-  档案化、逐字段核对、提交前必须经你确认），投出去之后还能追踪进展。当需要首次设置、手动触发监控、检查监控
-  状态、修改监控方向、查看岗位匹配度、根据JD改简历、管理简历版本、记录/查询投递进展、或者要
-  帮忙填网申/自动填写某公司官网网申表单时使用此技能。
-version: "2.3.0"
+  存档），能陪你深挖经历把简历上一行字展开成可复用素材，还能自动填写企业官网的网申表单
+  （京东校招、北森/zhiye 等校招网申系统：个人信息档案化、逐字段核对、提交前必须经你确认），
+  投出去之后追踪进展，拿到面试后还能帮你备题、演面试官陪你模拟、面完收录真题复盘。
+  当需要首次设置、手动触发监控、检查监控状态、修改监控方向、查看岗位匹配度、根据JD改简历、
+  管理简历版本、深挖某段经历、记录/查询投递进展、帮忙填网申/自动填写某公司官网网申表单、
+  或者准备面试/模拟面试/面试复盘时使用此技能。
+version: "2.4.0"
 user_invocable: true
 metadata:
   author: yekaiwen
-  version: "2.3.0"
+  version: "2.4.0"
 ---
 
-# 秋招求职助手：简历分析 + 岗位监控 + JD 深评 + 改简历 + 投递追踪
+# 秋招求职助手：简历分析 + 岗位监控 + JD 深评 + 深挖经历 + 改简历 + 网申填表 + 投递追踪 + 面试排练
 
 目录约定（不要写死用户名、家目录或安装位置）：
 
@@ -28,11 +30,11 @@ TMP=$SKILL_DIR/state/tmp
 执行本文件中的命令时，以当前这份 `SKILL.md` 所在目录作为工作目录，并使用相对于该目录的路径。所有配置、状态、脚本、简历档案和参考文档都从这里解析，禁止使用发布者机器上的绝对路径或固定技能 ID。中间文件一律写 `$TMP`，**不要用 `/tmp`**——多个运行会互相覆盖，残留文件还会串进下一次日报。
 
 - 配置：`$SKILL_DIR/config.json`（届别/季节/方向/关键词/深评参数/公司池/发现层策略，首次使用可能不存在，见第 0 步）、`$SKILL_DIR/config.example.json`（模板，不要直接改它）
-- 状态：`$SKILL_DIR/state/seen_postings.json`（岗位、深评状态、截止日期，顶层含发现层账本）、`$SKILL_DIR/state/match_insights.json`（累积洞察）、`$SKILL_DIR/state/applications.json`（投递记录）
+- 状态：`$SKILL_DIR/state/seen_postings.json`（岗位、深评状态、截止日期，顶层含发现层账本）、`$SKILL_DIR/state/match_insights.json`（累积洞察）、`$SKILL_DIR/state/applications.json`（投递记录）、`$SKILL_DIR/state/interview_bank.json`（面试题库与复盘）
 - 简历档案：`$SKILL_DIR/resumes/`（`index.json` 版本索引、`profile.json` 求职画像与简历分析、`originals/` 原件、`versions/<id>/` 各版本、`webapply-profile.json` 网申档案（含真实联系方式与开放题答案库，绝不入库）、`experience-bank.json` 经历素材库（按经历存已确认的量化事实与 STAR 故事，绝不入库）、`photos/` 证件照）
 - 脚本：`$SKILL_DIR/scripts/` 下 `discovery.py`（发现层排程与账本）、`dedupe.py`（去重）、`digest.py`（日报渲染）、`extract_text.py`（PDF/DOCX 文本抽取降级链）、`resume_store.py`（简历档案管理）、`match_state.py`（深评状态机）、`insights.py`（洞察累积）、`apply.py`（投递追踪）、`make_campus_template.py`（生成校招简历模板）
 - 简历模板：`$SKILL_DIR/assets/templates/resume-campus-cn.html`（**中文校招默认模板**，一页制，教育背景在实习经历之前；由 `make_campus_template.py` 从 `assets/campus-body.html` + kami 版式生成，**不要直接编辑**）
-- 参考文档：`$SKILL_DIR/references/` 下 `sources.md`（车道定义与轮转策略）、`keyword-filters.md`（过滤逻辑）、`resume-profile.md`（简历导入、分析与画像）、`matching.md`（JD 抓取契约与评分量表）、`tailoring.md`（一键改简历 W1-W7）、`applications.md`（投递追踪）、`experience-mining.md`（经历深挖七问法）、`webapply.md`（网申自动填表）、`webapply-patterns/<domain>.md`（各网申系统的表单经验，只存结构不存个人数据）、`digest-format.md`（日报格式）
+- 参考文档：`$SKILL_DIR/references/` 下 `sources.md`（车道定义与轮转策略）、`keyword-filters.md`（过滤逻辑）、`resume-profile.md`（简历导入、分析与画像）、`matching.md`（JD 抓取契约与评分量表）、`tailoring.md`（一键改简历 W1-W7）、`applications.md`（投递追踪）、`experience-mining.md`（经历深挖七问法）、`interview-prep.md`（面试备题/模拟/复盘）、`webapply.md`（网申自动填表）、`webapply-patterns/<domain>.md`（各网申系统的表单经验，只存结构不存个人数据）、`digest-format.md`（日报格式）
 - 内嵌技能：`$SKILL_DIR/vendor/kami/`（简历排版工具箱）、`$SKILL_DIR/vendor/resume-jd-fit/SKILL.md`（JD 定制改简历指引）——一律用读文件方式获取内容，不依赖任何技能加载工具
 - 外部依赖（**仅网申填表用**）：`web-access` skill 提供浏览器 CDP 能力——优先用技能加载工具加载，加载不了就读 `~/.claude/skills/web-access/SKILL.md`。本技能只调用它的 `scripts/check-deps.mjs`、`scripts/cdp-proxy.mjs` 和 `localhost:3456` 的 HTTP 接口；**网申表单经验写在本技能自己的 `references/webapply-patterns/`**，不写进 web-access 的目录（纯浏览层的通用经验除外，那个按它自己的约定写它的 `site-patterns/`）
 
@@ -60,10 +62,11 @@ TMP=$SKILL_DIR/state/tmp
 - **C. 只改设置**（换方向/改关键词/调深评上限/增删公司池/启停某条发现车道）→ 直接改 `$SKILL_DIR/config.json` 对应字段并向用户复述结果。
 - **D. 投递追踪**（"我投了XX""XX让我去面试了""我投了哪些""哪一版简历过筛率高"）→ 直接跳到"投递追踪"一节。
 - **E. 网申填表**（"帮我填XX的网申""自动填一下网申""投一下XX官网"，通常带网申链接或公司名）→ 直接跳到"网申填表"一节，细则读 `$SKILL_DIR/references/webapply.md`。**仅限交互式会话**，全程需要用户在场确认。
+- **F. 面试排练**（"帮我准备XX的面试""陪我模拟一下面试""明天二面了""面完了复盘一下"）→ 直接跳到"面试排练"一节，细则读 `$SKILL_DIR/references/interview-prep.md`。**仅限交互式会话。**
 
 ## 无人值守总则
 
-如果本次运行是定时任务（无人值守）：**不要**使用 AskUserQuestion 或以任何方式等待用户输入；遇到不确定情况一律按本文件和 references 中的默认策略自主处理，并在最终回复里如实说明做了什么假设。（第 0 步的初始化例外——见下文。）深评按 config 的 `resume.auto_deep_eval_when_unattended`（默认 true）自动执行；**任何情况下无人值守不得进入简历工坊、不得执行改简历、不得替用户标记任何投递状态、不得进入网申填表或执行任何浏览器写操作**；无简历档案时跳过深评，日报会自动带提示行。
+如果本次运行是定时任务（无人值守）：**不要**使用 AskUserQuestion 或以任何方式等待用户输入；遇到不确定情况一律按本文件和 references 中的默认策略自主处理，并在最终回复里如实说明做了什么假设。（第 0 步的初始化例外——见下文。）深评按 config 的 `resume.auto_deep_eval_when_unattended`（默认 true）自动执行；**任何情况下无人值守不得进入简历工坊、不得执行改简历、不得替用户标记任何投递状态、不得进入网申填表或执行任何浏览器写操作、不得进入深挖经历或面试排练**；无简历档案时跳过深评，日报会自动带提示行。
 
 ## 执行步骤
 
@@ -277,3 +280,19 @@ python3 $SKILL_DIR/scripts/digest.py render \
 **流程一句话版**：开 tab（hash 路由的 `#` 要写 `%23`）→ 判断登录态与站点形态 → 读 `webapply-patterns/` 已有经验（先按类名前缀确认系统：`bsrc-`=北森要 clickAt，`ant-`=Ant Design 普通 click 即可）→ `/eval` 读 DOM **连同现值**（红线字段的值只读"填没填"，一律打码不进对话）→ 出**字段映射预览表**（表单已有内容就走 diff 模式：现值→拟改为→理由；缺的当场问、问完写回档案）→ 用户确认 → 逐节填写，每节读回校验 + 截图（含中文路径要用 `curl -G --data-urlencode`）→ 传附件后**必查弹窗**，含"解析/覆盖/丢失"字样的一律选保守项 → **终局动作前停下**汇总请用户核对 → （用户同意且确实提交成功后）`apply.py mark ... --channel 官网网申` → 写回 pattern 经验（存盘前 grep 自检无 PII）→ `/close`。
 
 **降级**（CDP 起不来）：不做浏览器操作，档案初始化照常，改为产出「字段-答案清单」表格给用户复制粘贴手填，开放题附全文。
+
+## 面试排练
+
+细则读 `$SKILL_DIR/references/interview-prep.md`。**无人值守绝不进入本节。** 数据存 `state/interview_bank.json`。
+
+**核心前提：面试官手里拿的是用户投这家时用的那一版简历，不是最新版。** 备题和模拟都必须基于那一版——用 `apply.py list --applications ... --json` 按公司找到该条投递的 `resume_version`，读 `resumes/versions/<该版本>/resume.txt`；记录里没写就直接问用户，不要猜，更不要拿 active 版顶替。
+
+三模式：
+
+- **备题**：取材四样（那一版简历 / JD / `resumes/experience-bank.json` 素材库 / 公司信息，公司信息需要时联网查）。出题三路——行为题打简历薄弱点与经历追问、动机题打"为什么是这家"、专业题打 JD 硬技能；**另外必出简历硬伤题和反问环节的 2-3 个问题**。每题给"题目 + 考察点 + 从素材库哪段取材（写 id）"，**不给标准答案全文**——那会变成背稿。可选联网搜面经，搜到的题标注来源与日期。
+- **模拟**：演面试官，**一次一题**。每题反馈三件事：STAR 完整度（最常见是只讲做了什么不讲结果）、红旗话术（贬低前雇主/数字前后矛盾/背稿感/把团队成果说成个人的）、更优表达（**只改表达不改事实**）。用户要求时开"追问加压"——同一件事连问三层 why。答得好的沉淀回素材库 `star_stories` 或档案 `custom_answers`。
+- **复盘**：真面试后收集真题（标 `source: "real"`）与教训。**真题比预测题准**，同公司/同方向下次备题优先出真题。人刚面完是累的，别追着复盘。
+
+**红线**：不替用户编经历——事实只能来自素材库或用户当场说的；用户临场编了要提醒"这段素材库里没有，真面试被追问撑得住吗"。不做语音、不存逐字稿（只存题目/要点/反馈摘要）。不承诺结果。**排练不改任何投递状态**。
+
+投递追踪记到笔试/一面/二面/三面/HR面时，可以顺口提一句"要不要排练一下"；日报待跟进区块里 `next_action_at` 临近的面试同理。但**面试结果仍然只能由用户说了才 `apply.py stage`**。
