@@ -5,6 +5,12 @@ state/tmp/
 resumes/*
 !resumes/.gitkeep
 
+# 网申档案与证件照：含真实姓名、手机号、邮箱等 PII。
+# 上面的 resumes/* 已经覆盖，这里再显式写一遍——将来若有人放宽 resumes/* 的规则，
+# 这两行仍能挡住，不至于静默泄露。
+resumes/webapply-profile.json
+resumes/photos/
+
 # vendored kami 的商业/大体积字体只允许运行时由 ensure-fonts.sh 下载，不允许提交：
 #   *.ttf → 仓耳今楷（商业授权，明令禁止随包分发）
 #   *.otf → 思源宋体韩文（体积大，简历中文流程用不到）
