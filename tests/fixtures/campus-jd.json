@@ -1,0 +1,14 @@
+{
+  "posting_id": "posting-placeholder",
+  "resume_version_id": "20260731-base",
+  "eligible": true,
+  "score": 84,
+  "coverage": 90,
+  "confidence": "high",
+  "hard_failures": [],
+  "dimensions": {"hard_skills": 27, "experience": 21, "education": 18, "certificates": 8, "preferences": 10},
+  "evidence": ["简历明确写有 Python 和 SQL", "有数据清洗和对账项目"],
+  "gaps": [],
+  "actions": ["把数据项目移到首位"],
+  "jd_hash": "placeholder"
+}

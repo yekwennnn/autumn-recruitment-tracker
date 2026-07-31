@@ -1,0 +1,64 @@
+<style>
+  .header { align-items: flex-start; }
+  .photo {
+    width: 17.5mm; height: 24mm; object-fit: cover; object-position: top center;
+    border-radius: 1mm; border: 0.5pt solid var(--border); margin-left: 5mm; flex-shrink: 0;
+  }
+  .header-main { display: flex; align-items: flex-end; justify-content: space-between; flex: 1; gap: 6mm; }
+</style>
+<div class="header">
+  <div class="header-main">
+    <div>
+      <div class="name serif">{{姓名}}</div>
+    </div>
+    <div class="contact">
+      <span class="role">{{求职意向}}</span><br>
+      <a href="tel:{{PHONE}}">{{PHONE}}</a><span class="sep">·</span>
+      <a href="mailto:{{EMAIL}}">{{EMAIL}}</a><span class="sep">·</span>
+      <span class="loc">{{意向城市}}</span>
+    </div>
+  </div>
+  <img class="photo" src="{{PHOTO_DATA_URI}}" alt="">
+</div>
+
+<section>
+  <div class="section-title">职业概览</div>
+  <div class="summary">{{用 60-90 字概括工作年限、业务领域、最强能力、代表性成果和目标职级。只写简历有证据的事实。}}</div>
+</section>
+
+<section>
+  <div class="section-title">工作经历</div>
+  <div class="project">
+    <div class="proj-head"><span class="proj-name serif">{{公司名}}</span><span class="proj-kind">· {{部门}} · {{岗位}}</span><span class="proj-role">{{起止时间}}</span></div>
+    <div class="proj-lines">
+      <div class="proj-row"><div class="proj-label">背景</div><div class="proj-text">{{业务场景、目标和本人职责。}}</div></div>
+      <div class="proj-row"><div class="proj-label">动作</div><div class="proj-text">{{本人采取的关键动作、方法、工具和协作方式。}}</div></div>
+      <div class="proj-row"><div class="proj-label">结果</div><div class="proj-text">{{真实结果、规模、效率或业务影响；没有数字就写可核验状态。}}</div></div>
+    </div>
+  </div>
+  <!-- 没有的经历整块删除，不留空标题；后续经历复制 project 块并按时间倒序。 -->
+</section>
+
+<section>
+  <div class="section-title">代表项目</div>
+  <div class="project">
+    <div class="proj-head"><span class="proj-name serif">{{项目名}}</span><span class="proj-kind">· {{项目类型}}</span><span class="proj-role">{{时间}}</span></div>
+    <div class="proj-lines">
+      <div class="proj-row"><div class="proj-label">问题</div><div class="proj-text">{{项目要解决的问题与业务背景。}}</div></div>
+      <div class="proj-row"><div class="proj-label">行动</div><div class="proj-text">{{本人具体负责的拆解、设计、开发、分析或推动动作。}}</div></div>
+      <div class="proj-row"><div class="proj-label">结果</div><div class="proj-text">{{项目结果和当前状态；demo、上线、个人使用必须如实区分。}}</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-title">教育背景</div>
+  <div class="edu-row"><div><span class="school serif">{{学校}}</span><span class="major">　· {{学院}} · {{专业}} · {{学历}}</span></div><div class="date">{{起止时间}}</div></div>
+</section>
+
+<section>
+  <div class="section-title">技能与证书</div>
+  <div class="skill-row"><div class="skill-label">专业技能</div><div class="skill-body">{{按 JD 相关度排序；每项注明真实熟练程度或使用场景。}}</div></div>
+  <div class="skill-row"><div class="skill-label">工具软件</div><div class="skill-body">{{只写实际用过的工具。}}</div></div>
+  <div class="skill-row"><div class="skill-label">证书语言</div><div class="skill-body">{{已通过、在考和分数必须区分。}}</div></div>
+</section>

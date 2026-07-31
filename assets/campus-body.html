@@ -23,13 +23,13 @@
 
 <style>
   /* ── 字体：只用 SIL OFL 1.1 授权的自由字体，规避商用字体纠纷 ──
-     kami 原版 --serif 首选 "TsangerJinKai02"（仓耳今楷），那是**商用授权字体**，
-     而且模板的 @font-face 里挂了 jsDelivr CDN 地址——就算本机没装，WeasyPrint
+     kami 原版 --serif 首选一款商用授权字体，
+     而且模板的远程字体声明里挂了 CDN 地址——就算本机没装，WeasyPrint
      渲染时也会从 CDN 抓下来直接嵌进 PDF。实测过：生成的简历里确实嵌着
-     TsangerJinKai02，等于每份投出去的 PDF 都带着商用字体。
+     等于每份投出去的 PDF 都带着商用字体。
 
-     这里把 --serif 整条重写，移除 TsangerJinKai02。它一旦不在字体栈里，
-     上游那两条 @font-face 就没有任何选择器引用，CDN 也不会被请求。
+     这里把 --serif 整条重写，移除商用字体。它一旦不在字体栈里，
+     上游那两条远程字体声明就没有任何选择器引用，CDN 也不会被请求。
 
      栈内字体授权（都允许商用与嵌入 PDF）：
        LXGW WenKai        霞鹜文楷      SIL OFL 1.1   默认。楷体，最接近 kami 原本观感
@@ -38,7 +38,7 @@
      装字体：brew install --cask font-lxgw-wenkai font-noto-serif-cjk-sc
      一个都没装也能出稿，会退到系统宋体。
 
-     想改用宋体，把 "Noto Serif CJK SC" 调到第一位即可。不要把 TsangerJinKai02 加回来。 */
+     想改用宋体，把 "Noto Serif CJK SC" 调到第一位即可。不要把商用字体加回来。 */
   :root {
     --serif: "LXGW WenKai", "Noto Serif CJK SC", "Source Han Serif SC",
              "Songti SC", "STSong", Georgia, serif;

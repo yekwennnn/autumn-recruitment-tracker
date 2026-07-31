@@ -482,231 +482,69 @@
   }
 
   /* DENSE VARIANT: add class="resume--dense" to <body>
-<!-- ═══════════════════════════════════════════════════════════════════
-     中文校招简历 · 正文结构（本仓库自有内容，非 kami 原文）
-
-     与 kami 原版 resume.html 的区别，以及为什么：
-
-     1. 教育背景提到第 2 位（个人评价之下、实习经历之上）。
-        kami 原版把它放在最后——那是社招布局，工作十年的人学校是脚注。
-        校招相反：学校 / 专业 / 学历是 HR 的第一道筛选信号，必须一眼看到。
-     2. "工作经历"改为"实习经历"。应届生没有工作经历，写"工作经历"
-        会让 HR 以为你是社招投错了。
-     3. 删掉"开源项目 & 独立开发者""AI 判断与行动""对外影响力"。
-        这三节是资深工程师专属，普通应届生填不满，硬填就是注水。
-        确有开源作品的同学可以自行加回（结构见 kami 原模板）。
-     4. 一页制，没有 page-break。校招 HR 一天筛几百份，第二页基本不看。
-     5. metrics 数字条改为可选。多数学生没有拿得出手的四个数字，
-        与其填"参与项目 3 个"这种废话，不如整块删掉。
-
-     所有 {{变量}} 替换为实际内容；不适用的整块删除，不要留空壳。
-     改完验证（两条都要跑）：
-       python3 vendor/kami/scripts/build.py --check-placeholders <本文件>
-       python3 -c "from weasyprint import HTML; HTML('resume.html').write_pdf('out.pdf')"
-     ═══════════════════════════════════════════════════════════════════ -->
-
 <style>
-  /* ── 字体：只用 SIL OFL 1.1 授权的自由字体，规避商用字体纠纷 ──
-     kami 原版 --serif 首选一款商用授权字体，
-     而且模板的远程字体声明里挂了 CDN 地址——就算本机没装，WeasyPrint
-     渲染时也会从 CDN 抓下来直接嵌进 PDF。实测过：生成的简历里确实嵌着
-     等于每份投出去的 PDF 都带着商用字体。
-
-     这里把 --serif 整条重写，移除商用字体。它一旦不在字体栈里，
-     上游那两条远程字体声明就没有任何选择器引用，CDN 也不会被请求。
-
-     栈内字体授权（都允许商用与嵌入 PDF）：
-       LXGW WenKai        霞鹜文楷      SIL OFL 1.1   默认。楷体，最接近 kami 原本观感
-       Noto Serif CJK SC  思源宋体      SIL OFL 1.1   宋体，中文简历惯用，笔画更实
-       Songti SC / STSong 苹果系统字体  仅作兜底
-     装字体：brew install --cask font-lxgw-wenkai font-noto-serif-cjk-sc
-     一个都没装也能出稿，会退到系统宋体。
-
-     想改用宋体，把 "Noto Serif CJK SC" 调到第一位即可。不要把商用字体加回来。 */
-  :root {
-    --serif: "LXGW WenKai", "Noto Serif CJK SC", "Source Han Serif SC",
-             "Songti SC", "STSong", Georgia, serif;
-    --sans: var(--serif);
-  }
-
-  /* ── 校招版对 kami 版式的唯一覆盖，改动理由必须写在这里 ──
-     kami 的 .proj-label 默认 11mm。9pt 下一个汉字约 9pt≈3.2mm，四字标签需要
-     ≈12.7mm，于是"风险合规"会被切成"风险合"+"规"两行——resume-jd-fit 记录的
-     Bug 2。中文校招简历的标签几乎全是四字（风险合规/数据建模/经营分析…），
-     所以这是必然触发而不是偶发，放宽到 13mm 一次性解决。
-     .skill-label 同理：22mm 装不下七字标签，放宽到 24mm。
-     改这里之后必须重新生成模板并重新渲染验证。 */
-  .proj-label { width: 13mm; }
-  .skill-label { width: 24mm; }
-
-  /* ── 证件照（kami 原模板没有照片位，这是校招版新增）──
-     尺寸按中国证件照比例取 17.5×24mm（1 寸是 25×35mm，等比缩小以省版面）。
-     不是 resume-jd-fit 里写的西式方形头像：中文校招简历贴的是证件照。
-     实测每加高 1mm 就吃掉正文 1mm，24mm 是"看得清脸"与"不挤掉内容"的平衡点；
-     真要放大，先确认最后一节还装得下（见 tailoring.md W5 的页数检查）。
-     object-position: top center 保证裁切时优先保留头部。
-     不要照片就删掉 <img class="photo">，这段 CSS 留着无害。 */
   .header { align-items: flex-start; }
   .photo {
-    width: 17.5mm; height: 24mm;
-    object-fit: cover; object-position: top center;
-    border-radius: 1mm;
-    border: 0.5pt solid var(--border);
-    margin-left: 5mm;
-    flex-shrink: 0;
+    width: 17.5mm; height: 24mm; object-fit: cover; object-position: top center;
+    border-radius: 1mm; border: 0.5pt solid var(--border); margin-left: 5mm; flex-shrink: 0;
   }
-  .header-main { display: flex; align-items: flex-end;
-                 justify-content: space-between; flex: 1; gap: 6mm; }
+  .header-main { display: flex; align-items: flex-end; justify-content: space-between; flex: 1; gap: 6mm; }
 </style>
-
 <div class="header">
   <div class="header-main">
     <div>
       <div class="name serif">{{姓名}}</div>
     </div>
     <div class="contact">
-      <span class="role">{{求职意向，如"财务管培生"}}</span>
-      <br>
-      <a href="tel:{{PHONE}}">{{PHONE}}</a>
-      <span class="sep">·</span>
-      <a href="mailto:{{EMAIL}}">{{EMAIL}}</a>
-      <span class="sep">·</span>
+      <span class="role">{{求职意向}}</span><br>
+      <a href="tel:{{PHONE}}">{{PHONE}}</a><span class="sep">·</span>
+      <a href="mailto:{{EMAIL}}">{{EMAIL}}</a><span class="sep">·</span>
       <span class="loc">{{意向城市}}</span>
-      <!-- 有作品集/GitHub/个人主页才加，没有就删掉整个 a 标签：
-           <span class="sep">·</span><a href="{{URL}}">{{展示名}}</a>
-           不要写期望薪资。除非投递渠道明确要求，不要写年龄性别籍贯。 -->
     </div>
   </div>
-  <!-- 证件照：src 必须是 base64 data URI，不能用文件路径。
-       理由：四件套要能整体挪走、HTML 双击就能看，用路径一挪就裂图。
-       生成方式见 references/tailoring.md「证件照」一节。
-       不放照片 → 删掉下面整行 img。 -->
   <img class="photo" src="{{PHOTO_DATA_URI}}" alt="">
 </div>
 
-<!-- 数字条：可选。只有四个数字都真实且有说服力时才留
-     （如 GPA 3.8/4.0、专业前 5%、3 段实习、CPA 过 4 科）。
-     凑不满四个有分量的数字 → 删掉整个 <div class="metrics"> 块。 -->
-<div class="metrics">
-  <div class="metric"><span class="metric-value serif">{{数字}}<span class="unit">{{单位}}</span></span><span class="metric-label">{{标签}}</span></div>
-  <div class="metric"><span class="metric-value serif">{{数字}}<span class="unit">{{单位}}</span></span><span class="metric-label">{{标签}}</span></div>
-  <div class="metric"><span class="metric-value serif">{{数字}}<span class="unit">{{单位}}</span></span><span class="metric-label">{{标签}}</span></div>
-  <div class="metric"><span class="metric-value serif">{{数字}}<span class="unit">{{单位}}</span></span><span class="metric-label">{{标签}}</span></div>
-</div>
+<section>
+  <div class="section-title">职业概览</div>
+  <div class="summary">{{用 60-90 字概括工作年限、业务领域、最强能力、代表性成果和目标职级。只写简历有证据的事实。}}</div>
+</section>
 
 <section>
-  <div class="section-title">个人评价</div>
-  <div class="summary">
-    {{60-80 字。结构建议：届别+学历+专业 → 最能支撑目标岗位的 2-3 项能力（要有证据，别写"学习能力强"）→ 求职方向。不要写性格形容词。}}
+  <div class="section-title">工作经历</div>
+  <div class="project">
+    <div class="proj-head"><span class="proj-name serif">{{公司名}}</span><span class="proj-kind">· {{部门}} · {{岗位}}</span><span class="proj-role">{{起止时间}}</span></div>
+    <div class="proj-lines">
+      <div class="proj-row"><div class="proj-label">背景</div><div class="proj-text">{{业务场景、目标和本人职责。}}</div></div>
+      <div class="proj-row"><div class="proj-label">动作</div><div class="proj-text">{{本人采取的关键动作、方法、工具和协作方式。}}</div></div>
+      <div class="proj-row"><div class="proj-label">结果</div><div class="proj-text">{{真实结果、规模、效率或业务影响；没有数字就写可核验状态。}}</div></div>
+    </div>
+  </div>
+  <!-- 没有的经历整块删除，不留空标题；后续经历复制 project 块并按时间倒序。 -->
+</section>
+
+<section>
+  <div class="section-title">代表项目</div>
+  <div class="project">
+    <div class="proj-head"><span class="proj-name serif">{{项目名}}</span><span class="proj-kind">· {{项目类型}}</span><span class="proj-role">{{时间}}</span></div>
+    <div class="proj-lines">
+      <div class="proj-row"><div class="proj-label">问题</div><div class="proj-text">{{项目要解决的问题与业务背景。}}</div></div>
+      <div class="proj-row"><div class="proj-label">行动</div><div class="proj-text">{{本人具体负责的拆解、设计、开发、分析或推动动作。}}</div></div>
+      <div class="proj-row"><div class="proj-label">结果</div><div class="proj-text">{{项目结果和当前状态；demo、上线、个人使用必须如实区分。}}</div></div>
+    </div>
   </div>
 </section>
 
-<!-- ═══ 教育背景：校招简历的第一筛选项，必须在实习经历之前 ═══ -->
 <section>
   <div class="section-title">教育背景</div>
-  <div class="edu-row">
-    <div>
-      <span class="school serif">{{学校}}</span>
-      <span class="major">　· {{学院}} · {{专业}} · {{学历，如"硕士"}}</span>
-    </div>
-    <div class="date">{{起止时间}}</div>
-  </div>
-  <!-- 下面这行只在有优势时保留：GPA/排名靠前、主修课与岗位强相关、有奖学金。
-       成绩平平就整行删掉，留白好过暴露短板。 -->
-  <div class="proj-lines">
-    <div class="proj-row">
-      <div class="proj-label">在校</div>
-      <div class="proj-text">{{GPA / 专业排名 / 与目标岗位相关的主修课 3-5 门 / 奖学金。只写有优势的部分。}}</div>
-    </div>
-  </div>
-  <!-- 本硕都要写就复制上面的 edu-row（含 proj-lines），按时间倒序，硕士在前 -->
+  <div class="edu-row"><div><span class="school serif">{{学校}}</span><span class="major">　· {{学院}} · {{专业}} · {{学历}}</span></div><div class="date">{{起止时间}}</div></div>
 </section>
 
-<!-- ═══ 实习经历：应届生的主战场，按时间倒序 ═══ -->
 <section>
-  <div class="section-title">实习经历</div>
-
-  <div class="project">
-    <div class="proj-head">
-      <span class="proj-name serif">{{公司名}}</span>
-      <span class="proj-kind">· {{部门}} · {{岗位}}</span>
-      <span class="proj-role">{{起止时间}}</span>
-    </div>
-    <div class="proj-lines">
-      <div class="proj-row">
-        <div class="proj-label">背景</div>
-        <div class="proj-text">{{~50 字：什么业务场景、要解决什么问题、你在团队里的位置。}}</div>
-      </div>
-      <div class="proj-row">
-        <div class="proj-label">动作</div>
-        <div class="proj-text">{{~70 字：你本人具体做了什么。用动词开头，写清方法和工具。别写团队做了什么。}}</div>
-      </div>
-      <div class="proj-row">
-        <div class="proj-label">结果</div>
-        <div class="proj-text">{{~60 字：真实结果。有数字写数字并 <span class="hl">高亮</span>；没有数字就写规模与状态（如"覆盖 3 条产线，交接给正式员工沿用"），禁止编造指标。}}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 第二段实习：整块复制上面的 <div class="project">。
-       没有实习经历 → 删掉整个 section，把项目经历提上来，不要留空标题。 -->
-</section>
-
-<!-- ═══ 项目经历：课程项目、竞赛、科研、自己做的东西都算 ═══ -->
-<section>
-  <div class="section-title">项目经历</div>
-
-  <div class="project">
-    <div class="proj-head">
-      <span class="proj-name serif">{{项目名}}</span>
-      <span class="proj-kind">· {{项目类型，如"课程项目/竞赛/科研"}}</span>
-      <span class="proj-role">{{时间}}</span>
-    </div>
-    <div class="proj-lines">
-      <div class="proj-row">
-        <div class="proj-label">背景</div>
-        <div class="proj-text">{{~50 字：项目是什么、为什么做、几个人做、你负责哪块。}}</div>
-      </div>
-      <div class="proj-row">
-        <div class="proj-label">动作</div>
-        <div class="proj-text">{{~70 字：你本人的具体动作、方法、工具。}}</div>
-      </div>
-      <div class="proj-row">
-        <div class="proj-label">结果</div>
-        <div class="proj-text">{{~60 字：真实结果与状态。demo 就写 demo，别写成上线产品。}}</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══ 技能证书 ═══ -->
-<section>
-  <div class="section-title">技能证书</div>
-  <div class="skill-row">
-    <div class="skill-label">{{专业技能}}</div>
-    <div class="skill-body">{{按熟练度排序，会什么写什么。<span class="em-brand">最强的放最前</span>，不要罗列没用过的。}}</div>
-  </div>
-  <div class="skill-row">
-    <div class="skill-label">{{工具软件}}</div>
-    <div class="skill-body">{{如 Excel（数据透视/VBA）、SQL、Python、SAP。括号里注明会到什么程度。}}</div>
-  </div>
-  <div class="skill-row">
-    <div class="skill-label">{{证书}}</div>
-    <div class="skill-body">{{已过的写"已通过"，在考的写"在考（已过X科）"，<span class="em-brand">禁止把在考写成已过</span>。}}</div>
-  </div>
-  <div class="skill-row">
-    <div class="skill-label">{{语言}}</div>
-    <div class="skill-body">{{四六级/雅思托福分数。没考过就删掉这一行。}}</div>
-  </div>
-</section>
-
-<!-- ═══ 荣誉奖项：可选。没有分量的奖项不如不写，整个 section 删掉 ═══ -->
-<section>
-  <div class="section-title">荣誉奖项</div>
-  <div class="skill-row">
-    <div class="skill-label">{{年份}}</div>
-    <div class="skill-body">{{奖项名称 · 级别（国家级/省级/校级）· 排名或获奖比例}}</div>
-  </div>
+  <div class="section-title">技能与证书</div>
+  <div class="skill-row"><div class="skill-label">专业技能</div><div class="skill-body">{{按 JD 相关度排序；每项注明真实熟练程度或使用场景。}}</div></div>
+  <div class="skill-row"><div class="skill-label">工具软件</div><div class="skill-body">{{只写实际用过的工具。}}</div></div>
+  <div class="skill-row"><div class="skill-label">证书语言</div><div class="skill-body">{{已通过、在考和分数必须区分。}}</div></div>
 </section>
 </body>
 </html>

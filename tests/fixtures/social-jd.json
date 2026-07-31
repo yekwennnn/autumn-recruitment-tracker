@@ -1,0 +1,14 @@
+{
+  "posting_id": "posting-placeholder",
+  "resume_version_id": "20260731-base",
+  "eligible": true,
+  "score": 82,
+  "coverage": 80,
+  "confidence": "high",
+  "hard_failures": [],
+  "dimensions": {"seniority": 25, "impact": 24, "skills": 17, "domain": 8, "preferences": 8},
+  "evidence": ["简历有两年B端产品经验", "有SQL和从需求到上线的项目"],
+  "gaps": [{"type": "presentation_gap", "text": "需要量化项目影响"}],
+  "actions": ["补充项目规模"],
+  "jd_hash": "placeholder"
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Job Copilot"
+  short_description: "覆盖选岗、简历、网申、模拟面试与投递跟进"
+  default_prompt: "使用 $job-copilot 分析我的简历，建立求职方向并开始岗位监控。"

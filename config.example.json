@@ -1,51 +1,29 @@
 {
-  "onboarded": false,
-  "target_grad_year": "",
-  "target_season_label": "",
-  "season_end_date": "",
-  "state_retention_days": 120,
-  "include_internships": false,
-  "job_category_label": "",
-  "job_filter": {
-    "positive_keywords": [],
-    "fuzzy_keywords": [],
-    "negative_keywords": [],
-    "intern_exclusion_keywords": [
-      "实习生", "实习", "暑期实习", "日常实习", "寒假实习", "提前批实习", "Intern"
-    ],
-    "formal_recruit_keywords": [
-      "校园招聘", "校招", "管培生", "应届生", "全职", "正式员工"
-    ]
+  "schema_version": 2,
+  "timezone": "Asia/Shanghai",
+  "daily_digest_time": "09:00",
+  "daily_quota_default": 5,
+  "daily_quota_max": 20,
+  "min_match_score_default": 70,
+  "decision_after_hours": 24,
+  "application_followup_days_default": 3,
+  "source_policy": {
+    "official_first": true,
+    "aggregator_mode": "low_frequency",
+    "official_tiers": ["A", "B"],
+    "recommendation_tiers": ["A", "B"],
+    "unverified_tier": "C"
+  },
+  "privacy": {
+    "store_routine_profile_fields": true,
+    "store_passwords": false,
+    "store_captcha_or_sms": false,
+    "store_id_numbers": false,
+    "redact_logs": true
   },
   "resume": {
-    "enabled": true,
-    "max_deep_evals_per_run": 15,
-    "jd_fetch_parallel_agents": 3,
-    "jd_fetch_max_attempts": 2,
-    "min_score_for_action": 70,
-    "auto_deep_eval_when_unattended": true,
-    "jd_fetch_agent_model": "haiku"
-  },
-  "discovery": {
-    "company_watchlist": [],
-    "watchlist_batch_size": 12,
-    "mode": "lean",
-    "full_sweep_weekday": 6,
-    "agent_model": {
-      "wechat": "sonnet",
-      "aggregator": "haiku"
-    },
-    "known_company_hint_max": 200,
-    "disabled_lanes": [],
-    "auto_demote_after_zero_runs": 6
-  },
-  "applications": {
-    "enabled": true,
-    "followup_days": 14,
-    "stale_days": 30
-  },
-  "deadline": {
-    "warn_days": 7,
-    "archive_expired": true
+    "campus_pages": 1,
+    "social_pages_max": 2,
+    "require_photo_for_cn": true
   }
 }

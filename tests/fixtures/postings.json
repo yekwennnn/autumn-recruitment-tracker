@@ -1,0 +1,29 @@
+[
+  {
+    "company": "示例科技",
+    "title": "数据分析师",
+    "city": "上海",
+    "route": "campus",
+    "employment_type": "全职",
+    "source_platform": "公司官网",
+    "source_url": "https://example.com/job/da-1?utm_source=test",
+    "official_url": "https://example.com/job/da-1",
+    "application_url": "https://example.com/apply/da-1",
+    "source_tier": "A",
+    "jd_text": "要求Python、SQL，面向2027届，负责数据分析。",
+    "deadline": "2099-12-31",
+    "official_job_id": "da-1"
+  },
+  {
+    "company": "待核实公司",
+    "title": "产品实习生",
+    "city": "北京",
+    "route": "campus",
+    "employment_type": "实习",
+    "source_platform": "聚合平台",
+    "source_url": "https://aggregator.example.com/job/2",
+    "source_tier": "C",
+    "jd_text": "负责产品调研。",
+    "deadline": null
+  }
+]

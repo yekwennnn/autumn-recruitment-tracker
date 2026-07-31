@@ -1,77 +1,55 @@
 # 投递追踪
 
-监控发现岗位、深评给分、改简历——这三步之后还有最长的一段：投出去之后发生了什么。没有这一段，"越用越懂你"是断的：深评分数是自评，只有**真实的过筛/被拒**才是外部信号。
+填写草稿不等于投递。只有用户明确说已提交，或后续看到明确成功确认页/申请编号，才能执行：
 
-数据存 `state/applications.json`，唯一写方是 `scripts/apply.py`。
-
-## 什么时候记
-
-- **改完简历、用户说要投** → 立刻 `mark`（改简历流程 W7 之后的规定动作）。
-- 用户说"我投了XX""刚网申了XX" → `mark`。
-- 用户说"XX让我去笔试了""XX一面过了""XX挂了" → `stage`。
-- 用户问"我投了哪些""进展怎么样" → `list` / `stats`。
-- 每次监控运行渲染日报时 → 自动带出"待跟进"区块，不需要用户开口。
-
-**无人值守运行只读不写**：可以渲染待跟进提醒，但不得替用户标记任何投递状态或阶段。
-
-## 记一次投递
-
-```
-python3 $SKILL_DIR/scripts/apply.py mark \
-  --applications $SKILL_DIR/state/applications.json \
-  --state $SKILL_DIR/state/seen_postings.json \
-  --posting-id <岗位id> --resume-version <简历版本id> --channel 官网
+```bash
+python3 scripts/jobctl.py application mark-submitted \
+  --posting-id <岗位ID> --resume-version-id <版本ID> --channel 官网 --json
 ```
 
-`--posting-id` 用监控库里的岗位 id，公司名、岗位名、截止日期会自动带过来。库外的岗位（用户自己在别处看到的）改用 `--company` + `--title`。
+没有显式提供 `--next-action-at` 时，系统按 Campaign 时区安排投递日期后第 3 个自然日的日报状态检查。
+例如 7 月 31 日投递，日报时间为 09:00，则默认在 8 月 3 日 09:00 到期。用户明确指定的时间优先。
+`draft_filled` 和 `ready_for_review` 不会建立该提醒。
 
-可选：`--date`（补记历史投递）、`--next-action YYYY-MM-DD`（约好的笔试/面试时间）、`--note`。
+更新阶段：
 
-**`--resume-version` 尽量别省**。它是后面算"哪一版简历更能过筛"的唯一依据，省了就等于这次投递白投了统计价值。
-
-网申填表流程（`webapply.md`，路由 E）在表单**真的提交成功之后**会自动来记这一笔，`--channel` 固定填 `官网网申`；库外的岗位把网申链接放进 `--note`。填了但停在提交前没投的，不记。
-
-## 更新进展
-
-```
-python3 $SKILL_DIR/scripts/apply.py stage \
-  --applications $SKILL_DIR/state/applications.json \
-  --id <投递id或公司名关键字> --stage 一面 --next-action 2026-08-20
+```bash
+python3 scripts/jobctl.py application stage \
+  --id <投递ID或唯一公司/岗位关键词> --stage 一面 --json
 ```
 
-阶段取值（顺序即漏斗深度）：`已投递` → `简历通过` → `笔试` → `一面` → `二面` → `三面` → `HR面` → `offer`；终止态另有 `挂了`、`放弃`。
+模糊匹配多条时停下来让用户选择。每次阶段变化写 `application_events`。
 
-`--id` 支持传公司名/岗位名的关键字模糊匹配，匹配到多条会列出候选让你用准确 id 再来一次——**不要自己猜是哪一条**。
+## 状态检查
 
-记到 `笔试`/`一面`/`二面`/`三面`/`HR面` 时，顺口问一句"要不要排练一下"（`interview-prep.md`，路由 F）。备题要用的正是这条记录的 `resume_version`——**面试官手里是投递时那一版简历，不是最新版**，这也是 `--resume-version` 别省的又一个理由。排练本身不改投递状态，面试结果仍然等用户开口才 `stage`。
+日报提醒后，按用户反馈执行：
 
-## 待跟进的判定
+```bash
+# 已查看，暂无更新：从检查日顺延 3 个自然日
+python3 scripts/jobctl.py application check-status \
+  --id <投递ID或唯一公司/岗位关键词> --result no-update --json
 
-```
-python3 $SKILL_DIR/scripts/apply.py followups \
-  --applications $SKILL_DIR/state/applications.json --config $SKILL_DIR/config.json
-```
+# 状态已更新；笔试和面试存在明确时间时同时传 next-action-at
+python3 scripts/jobctl.py application check-status \
+  --id <投递ID> --result updated --stage 一面 \
+  --next-action-at <ISO时间> --json
 
-两类：
-
-- **待办到期** — `next_action_at` 已到或已过（笔试今天、面试昨天忘了记结果）。
-- **投了没动静** — 还停在"已投递"且超过 `applications.followup_days`（默认 14 天）。超过 `applications.stale_days`（默认 30 天）的额外标注"疑似已挂，可以考虑放弃了"。
-
-日报的"📮 投递待跟进"区块由 `digest.py` 直接读 applications.json 渲染（传 `--applications`），不需要单独调 followups。
-
-## 战绩统计
-
-```
-python3 $SKILL_DIR/scripts/apply.py stats \
-  --applications $SKILL_DIR/state/applications.json --by-version
+# 停止状态提醒，但保留投递记录
+python3 scripts/jobctl.py application check-status \
+  --id <投递ID> --result stop --json
 ```
 
-输出总漏斗（投递数 / 过简历筛数 / 过筛率 / offer 数）和按简历版本拆分的过筛率。
+同一关键词命中多条时只返回 `candidates`，让用户改用明确的投递 ID。用户报告拒绝、放弃、过期或归档时，
+进入终止态并自动清除 `next_action_at`。用户忽略提醒时不改数据、不归档，下一份日报继续展示。
 
-**这个数字要老实用**：校招投递样本量通常只有几十，版本之间几个百分点的差距没有统计意义，脚本自己也会在多版本时打印这句提醒。它能回答的是"这一版明显不行"（投了 15 个 0 过筛），不是"A 版比 B 版好 3%"。
+查询：
 
-改简历时（`tailoring.md` W1 选基底）应该先看一眼这个统计：**过筛率明显偏低的版本不要再拿来当基底**。
+```bash
+python3 scripts/jobctl.py application list --open-only
+python3 scripts/jobctl.py application stats
+```
 
-## 与截止日期的关系
+样本少于 10 条时提示统计不稳定。跟用户复述时区分：岗位推荐、网申草稿、已投递、筛选中、面试和 Offer。
 
-已投递的岗位不会再出现在日报的"⏰ 网申截止预警"里——投都投了，催没有意义。这个排除靠 `mark` 时带上 `--posting-id` 建立的关联，这也是能用 posting-id 就别用手填公司名的另一个理由。
+用户明确报告收到面试时，先按上述规则确认并更新对应投递记录，再询问是否进行模拟面试；用户同意后读取
+`references/interview.md`。仅询问通用面试技巧时不要更新真实投递阶段。
